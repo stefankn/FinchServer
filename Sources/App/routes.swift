@@ -1,14 +1,24 @@
 import Fluent
 import Vapor
+import VaporToOpenAPI
 
 func routes(_ app: Application) throws {
-    app.get { req async in
-        "It works!"
+    try app.register(collection: AlbumsController())
+    try app.register(collection: ItemsController())
+    
+    app.get("api", "docs") { req in
+        req.redirect(to: "/api/docs/index.html")
     }
-
-    app.get("hello") { req async -> String in
-        "Hello, world!"
+    .excludeFromOpenAPI()
+    
+    app.get("openapi", "openapi.json") { req in
+        req.application.routes.openAPI(
+            info: .init(
+                title: "Finch Server",
+                description: "API for interacting with a beets library",
+                version: "1.0.0"
+            )
+        )
     }
-
-    try app.register(collection: TodoController())
+    .excludeFromOpenAPI()
 }
