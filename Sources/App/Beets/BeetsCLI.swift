@@ -39,7 +39,8 @@ struct BeetsCLI {
     static func getBeetsConfigLocation(executablePath: String) throws -> URL {
         if
             let output = try command("\(executablePath) config -p"),
-            let url = URL(string: output.trimmingCharacters(in: .whitespacesAndNewlines)) {
+            let firstEntry = output.split(separator: "\n").first,
+            let url = URL(string: firstEntry.trimmingCharacters(in: .whitespacesAndNewlines)) {
             
             return url
         } else {
