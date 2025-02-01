@@ -24,7 +24,7 @@ struct ItemsController: RouteCollection {
             let item = try await Item.find(req.parameters.get("id"), on: req.db(.beets)),
             let path = item.path {
             
-            return req.fileio.streamFile(at: path)
+            return req.fileio.streamFile(at: path, mediaType: .audio)
         }
         
         throw Abort(.notFound)

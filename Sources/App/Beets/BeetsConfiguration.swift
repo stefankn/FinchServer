@@ -11,8 +11,9 @@ struct BeetsConfiguration {
     
     // MARK: - Properties
     
-    var configLocation: URL
-    var databaseLocation: URL
+    let executablePath: String
+    let configLocation: URL
+    let databaseLocation: URL
 }
 
 struct BeetsConfigurationKey: StorageKey {
@@ -26,8 +27,8 @@ extension Application {
     
     // MARK: - Properties
     
-    var beetsConfiguration: BeetsConfiguration? {
-        get { storage[BeetsConfigurationKey.self] }
+    var beetsConfiguration: BeetsConfiguration {
+        get { storage[BeetsConfigurationKey.self]! }
         set { storage[BeetsConfigurationKey.self] = newValue }
     }
 }

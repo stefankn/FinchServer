@@ -6,6 +6,15 @@ func routes(_ app: Application) throws {
     try app.register(collection: AlbumsController())
     try app.register(collection: ItemsController())
     
+    app
+        .get("api", "v1", "stats") { req in
+            return try req.beetsCLI.getStats()
+        }
+        .openAPI(
+            summary: "Get statistics about the beets library",
+            response: .type(StatsDTO.self)
+        )
+    
     app.get("api", "docs") { req in
         req.redirect(to: "/api/docs/index.html")
     }

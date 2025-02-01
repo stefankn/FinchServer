@@ -53,7 +53,7 @@ struct AlbumsController: RouteCollection {
     
     @Sendable func items(req: Request) async throws -> [ItemDTO] {
         if let album = try await Album.find(req.parameters.get("id"), on: req.db(.beets)) {
-            return try await album.$items.get(on: req.db(.beets)).map{ ItemDTO($0) }
+            return try await album.$items.get(on: req.db(.beets)).map{ ItemDTO($0, includeAlbumId: true) }
         }
         
         throw Abort(.notFound)
