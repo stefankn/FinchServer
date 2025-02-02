@@ -89,7 +89,7 @@ struct BeetsCLI {
         task.standardOutput = pipe
         task.standardError = pipe
         task.arguments = ["-c", command]
-        task.executableURL = URL(fileURLWithPath: "/bin/zsh")
+        task.executableURL = URL(fileURLWithPath: Environment.get("SHELL") ?? "/bin/zsh")
         task.standardInput = nil
         
         try task.run()
