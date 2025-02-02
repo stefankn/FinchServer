@@ -30,6 +30,7 @@ public func configure(_ app: Application) async throws {
     
     app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
     
+    app.http.server.configuration.hostname = "0.0.0.0"
     app.http.server.configuration.port = 25520
 
     try routes(app)
