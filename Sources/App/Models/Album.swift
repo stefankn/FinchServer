@@ -135,9 +135,9 @@ final class Album: Model, @unchecked Sendable {
     // MARK: - Functions
     
     func artworkThumbnailPath(req: Request) -> String? {
-        guard let artwork, let fileExtension = artworkURL?.pathExtension, let id else { return nil }
+        guard let artwork, let musicBrainzId, let fileExtension = artworkURL?.pathExtension else { return nil }
         
-        let thumbnailFilename = "album_\(id)_thumbnail.\(fileExtension)"
+        let thumbnailFilename = "album_\(musicBrainzId)_thumbnail.\(fileExtension)"
         let thumbnailsDirectory = req.application.directory.resourcesDirectory + "/Thumbnails/"
         let thumbnailPath = thumbnailsDirectory + thumbnailFilename
         
