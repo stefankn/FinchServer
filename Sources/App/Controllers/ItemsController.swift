@@ -13,7 +13,21 @@ struct ItemsController: RouteCollection {
     // MARK: - Functions
     
     @Sendable func index(req: Request) async throws -> [ItemDTO] {
-        try await Item.query(on: req.db(.beets)).filter(\.$albumId == nil).all().map{ ItemDTO($0) }
+        var query = Item.query(on: req.db(.beets)).filter(\.$albumId == nil)
+        
+        let sorting: Sorting = req.query[Sorting.self, at: "sort"] ?? .added
+        let sortOrder = req.query[SortingDirection.self, at: "direction"] ?? .ascending
+        
+        switch sorting {
+        case .added:
+            query = query.sort(\.$addedAt, sortOrder.direction)
+        case .title:
+            query = query.sort(\.$title, sortOrder.direction)
+        case .artist:
+            query = query.sort(\.$artist, sortOrder.direction)
+        }
+        
+        return try await query.all().map{ ItemDTO($0) }
     }
     
     @Sendable func show(req: Request) async throws -> ItemDTO {

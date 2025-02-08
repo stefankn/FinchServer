@@ -13,7 +13,21 @@ struct AlbumsController: RouteCollection {
     // MARK: - Functions
     
     @Sendable func index(req: Request) async throws -> [AlbumDTO] {
-        try await Album.query(on: req.db(.beets)).with(\.$attributes).all().map{ AlbumDTO($0) }
+        var query = Album.query(on: req.db(.beets)).with(\.$attributes)
+        
+        let sorting: Sorting = req.query[Sorting.self, at: "sort"] ?? .added
+        let sortOrder = req.query[SortingDirection.self, at: "direction"] ?? .ascending
+        
+        switch sorting {
+        case .added:
+            query = query.sort(\.$addedAt, sortOrder.direction)
+        case .title:
+            query = query.sort(\.$title, sortOrder.direction)
+        case .artist:
+            query = query.sort(\.$albumArtistSortKey, sortOrder.direction)
+        }
+        
+        return try await query.all().map{ AlbumDTO($0) }
     }
     
     @Sendable func show(req: Request) async throws -> AlbumDTO {
