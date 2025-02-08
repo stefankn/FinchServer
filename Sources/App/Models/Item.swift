@@ -51,6 +51,9 @@ final class Item: Model, @unchecked Sendable {
     @Field(key: "samplerate")
     var sampleRate: Int
     
+    @Field(key: "album_id")
+    var albumId: Int?
+    
     @OptionalParent(key: "album_id")
     var album: Album?
     

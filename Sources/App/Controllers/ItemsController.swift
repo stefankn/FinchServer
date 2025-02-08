@@ -6,10 +6,15 @@
 //
 
 import Vapor
+import Fluent
 
 struct ItemsController: RouteCollection {
     
     // MARK: - Functions
+    
+    @Sendable func index(req: Request) async throws -> [ItemDTO] {
+        try await Item.query(on: req.db(.beets)).filter(\.$albumId == nil).all().map{ ItemDTO($0) }
+    }
     
     @Sendable func show(req: Request) async throws -> ItemDTO {
         if let item = try await Item.find(req.parameters.get("id"), on: req.db(.beets)) {
@@ -35,6 +40,13 @@ struct ItemsController: RouteCollection {
     
     func boot(routes: any RoutesBuilder) throws {
         let items = routes.grouped("api", "v1", "items")
+        
+        items
+            .get(use: index)
+            .openAPI(
+                summary: "List all singleton items",
+                response: .type([ItemDTO].self)
+            )
         
         items.group(":id") { item in
             item.get(use: show)
