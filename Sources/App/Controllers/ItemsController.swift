@@ -12,7 +12,7 @@ struct ItemsController: RouteCollection {
     
     // MARK: - Functions
     
-    @Sendable func index(req: Request) async throws -> [ItemDTO] {
+    @Sendable func index(req: Request) async throws -> Page<ItemDTO> {
         var query = Item.query(on: req.db(.beets)).filter(\.$albumId == nil)
         
         let sorting: Sorting = req.query[Sorting.self, at: "sort"] ?? .added
@@ -27,7 +27,7 @@ struct ItemsController: RouteCollection {
             query = query.sort(\.$artist, sortOrder.direction)
         }
         
-        return try await query.all().map{ ItemDTO($0) }
+        return try await query.paginate(for: req).map{ ItemDTO($0) }
     }
     
     @Sendable func show(req: Request) async throws -> ItemDTO {
