@@ -18,6 +18,7 @@ final class Album: Model, @unchecked Sendable {
         case compilation
         case djmix = "dj-mix"
         case live
+        case ep
     }
     
     
