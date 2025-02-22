@@ -28,7 +28,11 @@ public func configure(_ app: Application) async throws {
     app.databases.use(DatabaseConfigurationFactory.sqlite(.file("db.sqlite")), as: .main)
     app.databases.use(DatabaseConfigurationFactory.sqlite(.file(beetsDatabaseLocation.path())), as: .beets)
     
+    app.migrations.add(CreatePlaylistsTable(), to: .main)
+    app.migrations.add(CreatePlaylistEntriesTable(), to: .main)
+    
     app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
+    app.routes.defaultMaxBodySize = "5mb"
     
     app.http.server.configuration.hostname = "0.0.0.0"
     app.http.server.configuration.port = 25520

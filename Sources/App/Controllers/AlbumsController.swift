@@ -32,46 +32,45 @@ struct AlbumsController: RouteCollection {
     }
     
     @Sendable func show(req: Request) async throws -> AlbumDTO {
-        if let album = try await Album.find(req.parameters.get("id"), on: req.db(.beets)) {
-            
-            // Eager load the items and attributes
-            _ = try await album.$attributes.get(on: req.db(.beets))
-            let items = try await album.$items.get(on: req.db(.beets))
-            
-            return AlbumDTO(album, items: items)
+        guard let album = try await Album.find(req.parameters.get("id"), on: req.db(.beets)) else {
+            throw Abort(.notFound)
         }
         
-        throw Abort(.notFound)
+        // Eager load the items and attributes
+        _ = try await album.$attributes.get(on: req.db(.beets))
+        let items = try await album.$items.get(on: req.db(.beets))
+        
+        return AlbumDTO(album, items: items)
     }
     
     @Sendable func artwork(req: Request) async throws -> Response {
-        if
+        guard
             let album = try await Album.find(req.parameters.get("id"), on: req.db(.beets)),
-            let artworkPath = album.artworkPath {
+            let artworkPath = album.artworkPath else {
             
-            return req.fileio.streamFile(at: artworkPath)
+            throw Abort(.notFound)
         }
         
-        throw Abort(.notFound)
+        return req.fileio.streamFile(at: artworkPath)
     }
     
     @Sendable func artworkThumbnail(req: Request) async throws -> Response {
-        if
+        guard
             let album = try await Album.find(req.parameters.get("id"), on: req.db(.beets)),
-            let artworkThumbnailPath = album.artworkThumbnailPath(req: req) {
+            let artworkThumbnailPath = album.artworkThumbnailPath(req: req) else {
             
-            return req.fileio.streamFile(at: artworkThumbnailPath)
+            throw Abort(.notFound)
         }
         
-        throw Abort(.notFound)
+        return req.fileio.streamFile(at: artworkThumbnailPath)
     }
     
     @Sendable func items(req: Request) async throws -> [ItemDTO] {
-        if let album = try await Album.find(req.parameters.get("id"), on: req.db(.beets)) {
-            return try await album.$items.get(on: req.db(.beets)).map{ ItemDTO($0, includeAlbumId: true) }
+        guard let album = try await Album.find(req.parameters.get("id"), on: req.db(.beets)) else {
+            throw Abort(.notFound)
         }
         
-        throw Abort(.notFound)
+        return try await album.$items.get(on: req.db(.beets)).map{ ItemDTO($0, includeAlbumId: true) }
     }
     
     
