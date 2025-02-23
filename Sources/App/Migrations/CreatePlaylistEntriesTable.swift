@@ -19,7 +19,7 @@ struct CreatePlaylistEntriesTable: Migration {
             .schema(PlaylistEntry.schema)
             .field("id", .int64, .identifier(auto: true))
             .field("index", .int64, .required)
-            .field("playlist_id", .int64, .required)
+            .field("playlist_id", .int64, .required, .references("playlists", "id", onDelete: .cascade))
             .field("item_id", .int64, .required)
             .field("created_at", .datetime, .required)
             .create()
