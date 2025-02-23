@@ -73,8 +73,19 @@ struct PlaylistsController: RouteCollection {
     @Sendable func create(req: Request) async throws -> PlaylistDTO {
         let body = try req.content.decode(CreatePlaylistDTO.self)
         let playlist = Playlist(body)
-        
+
         try await playlist.save(on: req.db(.main))
+        
+        if let itemIds = body.items {
+            let items = try await Item.query(on: req.db(.beets)).filter(\.$id ~~ itemIds).all()
+            var entries: [PlaylistEntry] = []
+            
+            for (index, item) in items.enumerated() {
+                entries.append(try .init(item: item, index: index))
+            }
+            
+            try await playlist.$entries.create(entries, on: req.db(.main))
+        }
         
         return PlaylistDTO(playlist)
     }
