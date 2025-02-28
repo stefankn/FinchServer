@@ -20,6 +20,7 @@ final class Album: Model, @unchecked Sendable {
         case live
         case ep
         case soundtrack
+        case single
     }
     
     
