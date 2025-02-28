@@ -134,16 +134,20 @@ final class Album: Model, @unchecked Sendable {
         return false
     }
     
+    var artworkThumbnailFilename: String? {
+        guard let musicBrainzId, let fileExtension = artworkURL?.pathExtension else { return nil }
+        
+        return "album_\(musicBrainzId)_thumbnail.\(fileExtension)"
+    }
+    
     
     
     // MARK: - Functions
     
     func artworkThumbnailPath(req: Request) -> String? {
-        guard let artwork, let musicBrainzId, let fileExtension = artworkURL?.pathExtension else { return nil }
+        guard let artwork, let artworkThumbnailFilename else { return nil }
         
-        let thumbnailFilename = "album_\(musicBrainzId)_thumbnail.\(fileExtension)"
-        let thumbnailsDirectory = req.application.directory.resourcesDirectory + "/Thumbnails/"
-        let thumbnailPath = thumbnailsDirectory + thumbnailFilename
+        let thumbnailPath = req.application.directory.thumbnailsDirectory + artworkThumbnailFilename
         
         if FileManager.default.fileExists(atPath: thumbnailPath) {
             return thumbnailPath

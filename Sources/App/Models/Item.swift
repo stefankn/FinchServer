@@ -8,11 +8,19 @@
 import Vapor
 import Fluent
 
-final class Item: Model, @unchecked Sendable {
+final class Item: Model, @unchecked Sendable, Comparable {
     
     // MARK: - Constants
     
     static let schema = "items"
+    
+    
+    // MARK: - Private Properties
+    
+    private var orderIndex: Int {
+        let disc = disc ?? 1
+        return disc * 1000 + (track ?? 0)
+    }
     
     
     
@@ -78,7 +86,27 @@ final class Item: Model, @unchecked Sendable {
     @Field(key: "added")
     var addedAt: Date
     
+    @Children(for: \.$item)
+    var attributes: [ItemAttribute]
+    
     var path: String? {
         String(data: pathData, encoding: .utf8)
+    }
+    
+    
+    
+    // MARK: - Functions
+    
+    // MARK: Comparable Functions
+    
+    static func < (lhs: Item, rhs: Item) -> Bool {
+        lhs.orderIndex < rhs.orderIndex
+    }
+    
+    
+    // MARK: Equatable Functions
+    
+    static func == (lhs: Item, rhs: Item) -> Bool {
+        lhs.id == rhs.id
     }
 }

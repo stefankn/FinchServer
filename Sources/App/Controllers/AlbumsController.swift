@@ -69,12 +69,63 @@ struct AlbumsController: RouteCollection {
         return req.fileio.streamFile(at: artworkThumbnailPath)
     }
     
+    @Sendable func path(req: Request) async throws -> AlbumPathDTO {
+        guard let album = try await Album.find(req.parameters.get("id"), on: req.db(.beets)) else {
+            throw Abort(.notFound)
+        }
+        
+        if let path = try await resolvePath(for: album, db: req.db(.beets))?.path {
+            return AlbumPathDTO(path: path)
+        }
+        
+        throw Abort(.notFound)
+    }
+    
     @Sendable func items(req: Request) async throws -> [ItemDTO] {
         guard let album = try await Album.find(req.parameters.get("id"), on: req.db(.beets)) else {
             throw Abort(.notFound)
         }
         
         return try await album.$items.get(on: req.db(.beets)).map{ ItemDTO($0, includeAlbumId: true) }
+    }
+    
+    @Sendable func delete(req: Request) async throws -> HTTPStatus {
+        guard let album = try await Album.find(req.parameters.get("id"), on: req.db(.beets)) else {
+            throw Abort(.notFound)
+        }
+        
+        let body = try req.content.decode(DeleteAlbumDTO.self)
+        
+        var thumbnailPath: String?
+        if let artworkThumbnailFilename = album.artworkThumbnailFilename {
+            thumbnailPath = req.application.directory.thumbnailsDirectory + artworkThumbnailFilename
+        }
+        
+        let albumPath = try await resolvePath(for: album, db: req.db(.beets))
+        
+        try await req.db(.beets).transaction { db in
+            let items = try await album.$items.get(on: db)
+            
+            for item in items.sorted() {
+                try await item.$attributes.get(on: db).delete(on: db)
+            }
+            
+            try await items.delete(on: db)
+            try await album.$attributes.get(on: db).delete(on: db)
+            try await album.delete(on: db)
+        }
+        
+        let fileManager = FileManager.default
+        
+        if let thumbnailPath, fileManager.fileExists(atPath: thumbnailPath) {
+            try fileManager.removeItem(atPath: thumbnailPath)
+        }
+        
+        if body.deleteFiles, let albumPath {
+            try fileManager.removeItem(at: albumPath)
+        }
+        
+        return .noContent
     }
     
     
@@ -96,6 +147,20 @@ struct AlbumsController: RouteCollection {
                     summary: "Get an album by id",
                     query: .type(String.self),
                     response: .type(AlbumDTO.self)
+                )
+            
+            album.get("path", use: path)
+                .openAPI(
+                    summary: "Get the file path of an album",
+                    query: .type(String.self),
+                    response: .type(AlbumPathDTO.self)
+                )
+            
+            album.delete(use: delete)
+                .openAPI(
+                    summary: "Delete an album by id",
+                    query: .type(String.self),
+                    statusCode: .noContent
                 )
             
             album.group("artwork") { artwork in
@@ -121,5 +186,23 @@ struct AlbumsController: RouteCollection {
                     )
             }
         }
+    }
+    
+    
+    
+    // MARK: - Private Functions
+    
+    private func resolvePath(for album: Album, db: any Database) async throws -> URL? {
+        var url: URL?
+        
+        if let artworkURL = album.artworkURL {
+            url = artworkURL
+        }
+        
+        if let item = try await album.$items.get(on: db).sorted().first, let path = item.path {
+            url = URL(fileURLWithPath: path)
+        }
+        
+        return url?.deletingLastPathComponent()
     }
 }
