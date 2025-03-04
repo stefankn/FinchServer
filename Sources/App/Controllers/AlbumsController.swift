@@ -16,7 +16,7 @@ struct AlbumsController: RouteCollection {
     @Sendable func index(req: Request) async throws -> Page<AlbumDTO> {
         var query = Album.query(on: req.db(.beets)).with(\.$attributes)
         
-        if let type = req.query[Album.AlbumType.self, at: "type"] {
+        if let type = req.query[AlbumType.self, at: "type"] {
             query = query.filter(\.$mainType == type)
         }
         

@@ -46,8 +46,8 @@ struct AlbumDTO: Content {
     let releaseGroupTitle: String
     let artist: String
     let artistSortKey: String
-    let type: Album.AlbumType
-    let types: [Album.AlbumType]
+    let type: AlbumType
+    let types: [AlbumType]
     let genre: String?
     let year: Int
     let discCount: Int

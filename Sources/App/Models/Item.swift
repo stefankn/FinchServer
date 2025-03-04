@@ -62,6 +62,9 @@ final class Item: Model, @unchecked Sendable, Comparable {
     @Field(key: "album_id")
     var albumId: Int?
     
+    @Field(key: "albumtype")
+    var albumType: String?
+    
     @OptionalParent(key: "album_id")
     var album: Album?
     

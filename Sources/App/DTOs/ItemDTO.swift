@@ -28,6 +28,7 @@ struct ItemDTO: Content {
         case comments
         case musicBrainzId = "music_brainz_id"
         case albumId = "album_id"
+        case albumType = "album_type"
     }
     
     
@@ -50,6 +51,7 @@ struct ItemDTO: Content {
     let comments: String?
     let musicBrainzId: String?
     let albumId: Int?
+    let albumType: String?
     
     
     
@@ -71,6 +73,7 @@ struct ItemDTO: Content {
         composer = item.composer.nilIfEmpty
         comments = item.comments.nilIfEmpty
         musicBrainzId = item.musicBrainzId.nilIfEmpty
+        albumType = item.albumType
         
         if includeAlbumId {
             albumId = item.$album.id

@@ -11,20 +11,6 @@ import SwiftGD
 
 final class Album: Model, @unchecked Sendable {
     
-    // MARK: - Types
-    
-    enum AlbumType: String, Codable {
-        case album
-        case compilation
-        case djmix = "dj-mix"
-        case live
-        case ep
-        case soundtrack
-        case single
-    }
-    
-    
-    
     // MARK: - Constants
     
     static let schema = "albums"
