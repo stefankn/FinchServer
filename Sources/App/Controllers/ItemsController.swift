@@ -37,22 +37,37 @@ struct ItemsController: RouteCollection {
     }
     
     @Sendable func show(req: Request) async throws -> ItemDTO {
-        if let item = try await Item.find(req.parameters.get("id"), on: req.db(.beets)) {
-            return ItemDTO(item, includeAlbumId: true)
+        guard let item = try await Item.find(req.parameters.get("id"), on: req.db(.beets)) else {
+            throw Abort(.notFound)
         }
         
-        throw Abort(.notFound)
+        return ItemDTO(item, includeAlbumId: true)
+    }
+    
+    @Sendable func update(req: Request) async throws -> ItemDTO {
+        guard let item = try await Item.find(req.parameters.get("id"), on: req.db(.beets)) else {
+            throw Abort(.notFound)
+        }
+        
+        let body = try req.content.decode(UpdateItemDTO.self)
+        
+        item.artist = body.artist
+        item.artists = body.artists
+        item.title = body.title
+        try await item.save(on: req.db(.beets))
+        
+        return ItemDTO(item)
     }
     
     @Sendable func stream(req: Request) async throws -> Response {
-        if
+        guard
             let item = try await Item.find(req.parameters.get("id"), on: req.db(.beets)),
-            let path = item.path {
+            let path = item.path else {
             
-            return req.fileio.streamFile(at: path, mediaType: .audio)
+            throw Abort(.notFound)
         }
         
-        throw Abort(.notFound)
+        return req.fileio.streamFile(at: path, mediaType: .audio)
     }
     
     
@@ -73,6 +88,14 @@ struct ItemsController: RouteCollection {
                 .openAPI(
                     summary: "Get an item by id",
                     query: .type(String.self),
+                    response: .type(ItemDTO.self)
+                )
+            
+            item.put(use: update)
+                .openAPI(
+                    summary: "Update an item by id",
+                    query: .type(String.self),
+                    body: .type(UpdateItemDTO.self),
                     response: .type(ItemDTO.self)
                 )
             
