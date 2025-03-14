@@ -28,6 +28,7 @@ struct AlbumDTO: Content {
         case catalogNumber = "catalog_number"
         case country
         case isArtworkAvailable = "is_artwork_available"
+        case artworkPath = "artwork_path"
         case musicBrainzId = "music_brainz_id"
         case musicBrainzArtistId = "music_brainz_artist_id"
         case musicBrainzReleaseGroupId = "music_brainz_release_group_id"
@@ -57,6 +58,7 @@ struct AlbumDTO: Content {
     let catalogNumber: String?
     let country: String?
     let isArtworkAvailable: Bool
+    let artworkPath: String?
 
     let musicBrainzId: String?
     let musicBrainzArtistId: String?
@@ -89,6 +91,7 @@ struct AlbumDTO: Content {
         catalogNumber = album.catalogNumber.nilIfEmpty
         country = album.country
         isArtworkAvailable = album.isArtworkAvailable
+        artworkPath = album.artworkPath
         musicBrainzId = album.musicBrainzId.nilIfEmpty
         musicBrainzArtistId = album.musicBrainzArtistId.nilIfEmpty
         musicBrainzReleaseGroupId = album.musicBrainzReleaseGroupId.nilIfEmpty

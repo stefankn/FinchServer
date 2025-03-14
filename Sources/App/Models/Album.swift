@@ -95,9 +95,14 @@ final class Album: Model, @unchecked Sendable {
     }
     
     var artworkPath: String? {
-        guard isArtworkAvailable, let artworkPathData else { return nil }
-        
-        return String(data: artworkPathData, encoding: .utf8)
+        get {
+            guard isArtworkAvailable, let artworkPathData else { return nil }
+            
+            return String(data: artworkPathData, encoding: .utf8)
+        }
+        set {
+            artworkPathData = newValue?.data(using: .utf8)
+        }
     }
     
     var artworkURL: URL? {

@@ -89,6 +89,35 @@ struct AlbumsController: RouteCollection {
         return try await album.$items.get(on: req.db(.beets)).map{ ItemDTO($0, includeAlbumId: true) }
     }
     
+    @Sendable func update(req: Request) async throws -> AlbumDTO {
+        guard let album = try await Album.find(req.parameters.get("id"), on: req.db(.beets)) else {
+            throw Abort(.notFound)
+        }
+        
+        let body = try req.content.decode(UpdateAlbumDTO.self)
+        
+        var thumbnailFilename: String?
+        if album.artworkPath != body.artworkPath {
+            thumbnailFilename = album.artworkThumbnailFilename
+        }
+        
+        album.albumArtist = body.artist
+        album.title = body.title
+        album.artworkPath = body.artworkPath
+        
+        if let thumbnailFilename {
+            let thumbnailPath = req.application.directory.thumbnailsDirectory + thumbnailFilename
+            if FileManager.default.fileExists(atPath: thumbnailPath) {
+                try FileManager.default.removeItem(atPath: thumbnailPath)
+            }
+        }
+        
+        try await album.save(on: req.db(.beets))
+        _ = try await album.$attributes.get(on: req.db(.beets))
+        
+        return AlbumDTO(album)
+    }
+    
     @Sendable func delete(req: Request) async throws -> HTTPStatus {
         guard let album = try await Album.find(req.parameters.get("id"), on: req.db(.beets)) else {
             throw Abort(.notFound)
@@ -154,6 +183,14 @@ struct AlbumsController: RouteCollection {
                     summary: "Get the file path of an album",
                     query: .type(String.self),
                     response: .type(AlbumPathDTO.self)
+                )
+            
+            album.put(use: update)
+                .openAPI(
+                    summary: "Update an album by id",
+                    query: .type(String.self),
+                    body: .type(UpdateAlbumDTO.self),
+                    response: .type(AlbumDTO.self)
                 )
             
             album.delete(use: delete)
