@@ -59,6 +59,25 @@ struct ItemsController: RouteCollection {
         return ItemDTO(item)
     }
     
+    @Sendable func delete(req: Request) async throws -> HTTPStatus {
+        guard let item = try await Item.find(req.parameters.get("id"), on: req.db(.beets)) else {
+            throw Abort(.notFound)
+        }
+        
+        let path = item.path
+        
+        try await req.db(.beets).transaction { db in
+            try await item.$attributes.get(on: db).delete(on: db)
+            try await item.delete(on: db)
+        }
+        
+        if let path, FileManager.default.fileExists(atPath: path) {
+            try FileManager.default.removeItem(atPath: path)
+        }
+        
+        return .noContent
+    }
+    
     @Sendable func stream(req: Request) async throws -> Response {
         guard
             let item = try await Item.find(req.parameters.get("id"), on: req.db(.beets)),
@@ -97,6 +116,13 @@ struct ItemsController: RouteCollection {
                     query: .type(String.self),
                     body: .type(UpdateItemDTO.self),
                     response: .type(ItemDTO.self)
+                )
+            
+            item.delete(use: delete)
+                .openAPI(
+                    summary: "Delete an item by id",
+                    query: .type(String.self),
+                    statusCode: .noContent
                 )
             
             item.get("stream", use: stream)
