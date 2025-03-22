@@ -8,11 +8,10 @@
 import Vapor
 
 enum AlbumType: String, Codable {
-    case album
-    case compilation
-    case djmix = "dj-mix"
-    case live
-    case ep
-    case soundtrack
-    case single
+    case album = "Album"
+    case compilation = "Compilation"
+    case djmix = "Mix"
+    case ep = "EP"
+    case maxiSingle = "Maxi-Single"
+    case single = "Single"
 }

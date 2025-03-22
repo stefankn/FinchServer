@@ -17,7 +17,7 @@ struct AlbumsController: RouteCollection {
         var query = Album.query(on: req.db(.beets)).with(\.$attributes)
         
         if let type = req.query[AlbumType.self, at: "type"] {
-            query = query.filter(\.$mainType == type)
+            query = query.filter(\.$albumType =~ type.rawValue)
         }
         
         let sorting: Sorting = req.query[Sorting.self, at: "sort"] ?? .added

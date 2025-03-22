@@ -18,10 +18,13 @@ struct AlbumDTO: Content {
         case artist
         case artistSortKey = "artist_sort_key"
         case type
-        case types
         case genre
+        case style
         case year
         case discCount = "disc_count"
+        case discogsAlbumId = "discogs_album_id"
+        case discogsArtistId = "discogs_artist_id"
+        case discogsLabelId = "discogs_label_id"
         case label
         case barcode
         case asin
@@ -29,9 +32,6 @@ struct AlbumDTO: Content {
         case country
         case isArtworkAvailable = "is_artwork_available"
         case artworkPath = "artwork_path"
-        case musicBrainzId = "music_brainz_id"
-        case musicBrainzArtistId = "music_brainz_artist_id"
-        case musicBrainzReleaseGroupId = "music_brainz_release_group_id"
         case addedAt = "added_at"
         case media
         case dataSource = "data_source"
@@ -47,11 +47,14 @@ struct AlbumDTO: Content {
     let releaseGroupTitle: String
     let artist: String
     let artistSortKey: String
-    let type: AlbumType
-    let types: [AlbumType]
+    let type: String
     let genre: String?
+    let style: String?
     let year: Int
     let discCount: Int
+    let discogsAlbumId: Int?
+    let discogsArtistId: Int?
+    let discogsLabelId: Int?
     let label: String?
     let barcode: String?
     let asin: String?
@@ -59,10 +62,6 @@ struct AlbumDTO: Content {
     let country: String?
     let isArtworkAvailable: Bool
     let artworkPath: String?
-
-    let musicBrainzId: String?
-    let musicBrainzArtistId: String?
-    let musicBrainzReleaseGroupId: String?
     
     let addedAt: Date
     let media: String?
@@ -80,11 +79,14 @@ struct AlbumDTO: Content {
         releaseGroupTitle = album.releaseGroupTitle
         artist = album.albumArtist
         artistSortKey = album.albumArtistSortKey
-        type = album.mainType
-        types = album.types
+        type = album.albumType
         genre = album.genre.nilIfEmpty
+        style = album.style.nilIfEmpty
         year = album.year
         discCount = album.discCount
+        discogsAlbumId = album.discogsAlbumId
+        discogsArtistId = album.discogsArtistId
+        discogsLabelId = album.discogsLabelId
         label = album.label.nilIfEmpty
         barcode = album.barcode.nilIfEmpty
         asin = album.asin.nilIfEmpty
@@ -92,9 +94,6 @@ struct AlbumDTO: Content {
         country = album.country
         isArtworkAvailable = album.isArtworkAvailable
         artworkPath = album.artworkPath
-        musicBrainzId = album.musicBrainzId.nilIfEmpty
-        musicBrainzArtistId = album.musicBrainzArtistId.nilIfEmpty
-        musicBrainzReleaseGroupId = album.musicBrainzReleaseGroupId.nilIfEmpty
         addedAt = album.addedAt
         media = album.attributes.first{ $0.key == "media" }?.value
         dataSource = album.attributes.first{ $0.key == "data_source" }?.value

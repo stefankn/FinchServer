@@ -41,7 +41,7 @@ final class Album: Model, @unchecked Sendable {
     var releaseGroupTitle: String
     
     @Field(key: "albumtype")
-    var mainType: AlbumType
+    var albumType: String
 
     @Field(key: "added")
     var addedAt: Date
@@ -49,20 +49,23 @@ final class Album: Model, @unchecked Sendable {
     @Field(key: "genre")
     var genre: String?
     
+    @Field(key: "style")
+    var style: String?
+    
     @Field(key: "year")
     var year: Int
     
     @Field(key: "disctotal")
     var discCount: Int
     
-    @Field(key: "mb_albumid")
-    var musicBrainzId: String?
+    @Field(key: "discogs_albumid")
+    var discogsAlbumId: Int?
     
-    @Field(key: "mb_albumartistid")
-    var musicBrainzArtistId: String?
+    @Field(key: "discogs_artistid")
+    var discogsArtistId: Int?
     
-    @Field(key: "mb_releasegroupid")
-    var musicBrainzReleaseGroupId: String?
+    @Field(key: "discogs_labelid")
+    var discogsLabelId: Int?
     
     @Field(key: "label")
     var label: String?
@@ -126,9 +129,9 @@ final class Album: Model, @unchecked Sendable {
     }
     
     var artworkThumbnailFilename: String? {
-        guard let musicBrainzId, let fileExtension = artworkURL?.pathExtension else { return nil }
+        guard let discogsAlbumId, let fileExtension = artworkURL?.pathExtension else { return nil }
         
-        return "album_\(musicBrainzId)_thumbnail.\(fileExtension)"
+        return "album_\(discogsAlbumId)_thumbnail.\(fileExtension)"
     }
     
     
