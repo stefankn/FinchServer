@@ -15,8 +15,8 @@ struct ItemsController: RouteCollection {
     @Sendable func index(req: Request) async throws -> Page<ItemDTO> {
         var query = Item.query(on: req.db(.beets)).filter(\.$albumId == nil)
         
-        if let albumType = req.query[AlbumType.self, at: "type"] {
-            query = query.filter(\.$albumType == albumType.rawValue)
+        if let filter = req.query[SingletonFilter.self, at: "filter"] {
+            query = query.filter(\.$albumType == filter.rawValue)
         } else {
             query = query.filter(\.$albumType == "")
         }

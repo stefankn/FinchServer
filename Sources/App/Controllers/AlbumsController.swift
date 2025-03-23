@@ -16,8 +16,12 @@ struct AlbumsController: RouteCollection {
     @Sendable func index(req: Request) async throws -> Page<AlbumDTO> {
         var query = Album.query(on: req.db(.beets)).with(\.$attributes)
         
-        if let type = req.query[AlbumType.self, at: "type"] {
-            query = query.filter(\.$albumType =~ type.rawValue)
+        if let filter = req.query[AlbumFilter.self, at: "filter"] {
+            query = query.group(.or) {
+                for type in filter.types {
+                    $0.filter(\.$albumType =~ type)
+                }
+            }
         }
         
         let sorting: Sorting = req.query[Sorting.self, at: "sort"] ?? .added

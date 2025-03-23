@@ -91,12 +91,6 @@ final class Album: Model, @unchecked Sendable {
     @Children(for: \.$album)
     var items: [Item]
     
-    var types: [AlbumType] {
-        typesValue
-            .split(separator: ";")
-            .compactMap{ AlbumType(rawValue: $0.trimmingCharacters(in: .whitespaces)) }
-    }
-    
     var artworkPath: String? {
         get {
             guard isArtworkAvailable, let artworkPathData else { return nil }

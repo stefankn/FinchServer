@@ -84,9 +84,9 @@ struct AlbumDTO: Content {
         style = album.style.nilIfEmpty
         year = album.year
         discCount = album.discCount
-        discogsAlbumId = album.discogsAlbumId
-        discogsArtistId = album.discogsArtistId
-        discogsLabelId = album.discogsLabelId
+        discogsAlbumId = album.discogsAlbumId != 0 ? album.discogsAlbumId : nil
+        discogsArtistId = album.discogsArtistId != 0 ? album.discogsArtistId : nil
+        discogsLabelId = album.discogsLabelId != 0 ? album.discogsLabelId : nil
         label = album.label.nilIfEmpty
         barcode = album.barcode.nilIfEmpty
         asin = album.asin.nilIfEmpty
