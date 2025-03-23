@@ -20,7 +20,7 @@ enum AlbumFilter: String, Decodable {
     var types: [String] {
         switch self {
         case .album:
-            return ["Album"]
+            return ["Album", "LP"]
         case .compilation:
             return ["Compilation", "Mixed"]
         case .single:
