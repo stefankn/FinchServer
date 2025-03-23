@@ -19,7 +19,7 @@ struct AlbumsController: RouteCollection {
         if let filter = req.query[AlbumFilter.self, at: "filter"] {
             query = query.group(.or) {
                 for type in filter.types {
-                    $0.filter(\.$albumType =~ type)
+                    $0.filter(\.$albumType ~~ type)
                 }
             }
         }
