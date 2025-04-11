@@ -33,7 +33,7 @@ struct AlbumsController: RouteCollection {
         case .title:
             query = query.sort(\.$title, sortOrder.direction)
         case .artist:
-            query = query.sort(\.$albumArtistSortKey, sortOrder.direction)
+            query = query.sort(\.$albumArtist, sortOrder.direction)
         }
         
         return try await query.paginate(for: req).map{ AlbumDTO($0) }
