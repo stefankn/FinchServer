@@ -1,0 +1,7 @@
+﻿services:
+  finch:
+    image: finchserver
+    build:
+      context: .
+      dockerfile: FinchServer/Dockerfile
+
