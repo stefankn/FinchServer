@@ -1,4 +1,4 @@
-namespace FinchServer.Controllers;
+namespace FinchServer.Controllers.Utilities;
 
 public class Pager<T>(T[] items, int page, int total, int limit) {
     

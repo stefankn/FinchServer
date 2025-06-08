@@ -1,7 +1,6 @@
-using FinchServer.Beets;
 using Microsoft.EntityFrameworkCore;
 
-namespace FinchServer.Database;
+namespace FinchServer.Beets;
 
 public class BeetsContext(BeetsConfiguration configuration): DbContext {
     

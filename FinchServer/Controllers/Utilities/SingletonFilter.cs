@@ -1,4 +1,4 @@
-namespace FinchServer.Controllers;
+namespace FinchServer.Controllers.Utilities;
 
 public enum SingletonFilter {
     Uncategorized,

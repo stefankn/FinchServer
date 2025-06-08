@@ -10,6 +10,7 @@ builder.Services.AddTransient<BeetsConfiguration>();
 
 // Database
 builder.Services.AddDbContextFactory<BeetsContext>();
+builder.Services.AddDbContextFactory<DataContext>();
 
 // https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
@@ -21,6 +22,12 @@ builder.Services
     });
 
 var app = builder.Build();
+
+// Migrate database
+using (var scope = app.Services.CreateScope()) {
+    var dataContext = scope.ServiceProvider.GetRequiredService<DataContext>();
+    await dataContext.Migrate();
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment()) {

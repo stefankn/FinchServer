@@ -1,5 +1,6 @@
+using FinchServer.Beets;
 using FinchServer.Controllers.DTO;
-using FinchServer.Database;
+using FinchServer.Controllers.Utilities;
 using LinqKit;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
