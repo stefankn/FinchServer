@@ -86,6 +86,9 @@ final class Item: Model, @unchecked Sendable, Comparable {
     @Field(key: "encoder")
     var encoder: String?
     
+    @Field(key: "discogs_artistid")
+    var discogsArtistId: Int?
+    
     @Field(key: "added")
     var addedAt: Date
     
