@@ -14,4 +14,8 @@ extension DirectoryConfiguration {
     var thumbnailsDirectory: String {
         resourcesDirectory + "/Thumbnails/"
     }
+    
+    var artistImagesDirectory: String {
+        resourcesDirectory + "/Artists/"
+    }
 }

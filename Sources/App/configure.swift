@@ -30,6 +30,7 @@ public func configure(_ app: Application) async throws {
     
     app.migrations.add(CreatePlaylistsTable(), to: .main)
     app.migrations.add(CreatePlaylistEntriesTable(), to: .main)
+    app.migrations.add(CreateArtistsTable(), to: .main)
     
     app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
     app.routes.defaultMaxBodySize = "5mb"

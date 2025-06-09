@@ -6,6 +6,7 @@ func routes(_ app: Application) throws {
     try app.register(collection: AlbumsController())
     try app.register(collection: ItemsController())
     try app.register(collection: PlaylistsController())
+    try app.register(collection: ArtistsController())
     
     app
         .get("api", "v1", "stats") { req in
