@@ -83,6 +83,9 @@ final class Item: Model, @unchecked Sendable, Comparable {
     @Field(key: "mb_trackid")
     var musicBrainzId: String?
     
+    @Field(key: "mb_artistid")
+    var musicBrainzArtistId: String?
+    
     @Field(key: "encoder")
     var encoder: String?
     
