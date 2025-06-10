@@ -16,6 +16,6 @@ extension DirectoryConfiguration {
     }
     
     var artistImagesDirectory: String {
-        resourcesDirectory + "/Artists/"
+        resourcesDirectory + "Artists/"
     }
 }

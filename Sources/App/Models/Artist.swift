@@ -19,22 +19,13 @@ final class Artist: Model, @unchecked Sendable {
     // MARK: - Properties
     
     @ID(custom: .id, generatedBy: .user)
-    var id: Int?
+    var id: String?
     
     @Field(key: "name")
     var name: String
     
-    @Field(key: "real_name")
-    var realName: String?
-    
-    @Field(key: "image")
-    var image: String?
-    
-    @Field(key: "profile")
-    var profile: String?
-    
-    @Field(key: "urls")
-    var urls: [String]?
+    @Children(for: \.$artist)
+    var images: [ArtistImage]
     
     @Timestamp(key: "created_at", on: .create)
     var createdAt: Date?
@@ -42,23 +33,13 @@ final class Artist: Model, @unchecked Sendable {
     @Timestamp(key: "updated_at", on: .update)
     var updatedAt: Date?
     
-    var thumbnailImage: String? {
-        guard let image else { return nil }
-        
-        return "thumb_\(image)";
-    }
-    
     
     
     // MARK: - Construction
     
-    init(_ response: ArtistResponse, imageFilename: String?) {
-        id = response.id
+    init(_ response: ArtistResponse) {
+        id = response.mbId
         name = response.name
-        realName = response.realName
-        image = imageFilename
-        profile = response.profile
-        urls = response.urls
     }
     
     init() {}
@@ -67,16 +48,12 @@ final class Artist: Model, @unchecked Sendable {
     
     // MARK: - Functions
     
-    func artworkPath(req: Request) -> String? {
-        guard let image, let artistDirectory = artistDirectory(req: req) else { return nil }
+    func imagePath(for type: ArtistImage.ImageType, req: Request) async throws -> String? {
+        guard
+            let image = try await $images.query(on: req.db(.main)).filter(\.$type == type).first(),
+            let artistDirectory = artistDirectory(req: req) else { return nil }
         
-        return "\(artistDirectory)/\(image)"
-    }
-    
-    func artworkThumbnailPath(req: Request) -> String? {
-        guard let thumbnailImage, let artistDirectory = artistDirectory(req: req) else { return nil }
-        
-        return "\(artistDirectory)/\(thumbnailImage)"
+        return "\(artistDirectory)/\(image.filename)"
     }
     
     
