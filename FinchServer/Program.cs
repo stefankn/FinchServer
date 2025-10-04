@@ -1,18 +1,23 @@
 using System.Text.Json;
 using FinchServer.Beets;
 using FinchServer.Database;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Configuration
 builder.Configuration.AddEnvironmentVariables();
-builder.Services.AddTransient<BeetsConfiguration>();
+
+var beetsConfiguration = new BeetsConfiguration(builder.Configuration);
+builder.Services.AddSingleton(beetsConfiguration);
 
 // Database
-
-// Use singleton for performance, this is fine for read-only operations.
-// SQLite allows concurrent reads, and there's no transaction state to worry about.
-builder.Services.AddDbContext<BeetsContext>(ServiceLifetime.Singleton);
+var isDevelopment = builder.Environment.IsDevelopment();
+builder.Services.AddDbContextPool<BeetsContext>(options => {
+        options.UseSqlite($"Data Source={beetsConfiguration.DatabasePath};Cache=Shared;Pooling=True");
+    },
+    poolSize: 128
+);
 
 builder.Services.AddDbContext<DataContext>();
 
