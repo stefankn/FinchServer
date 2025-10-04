@@ -24,7 +24,7 @@ public class ItemsController(BeetsContext beetsContext): ControllerBase {
 
         SingletonFilter? singletonFilter = null;
         if (!string.IsNullOrEmpty(filter)) {
-            if (!Enum.TryParse<SingletonFilter>(filter, true, out var parsedSingletonFilter)) 
+            if (!Enum.TryParse<SingletonFilter>(filter.Replace("-", ""), true, out var parsedSingletonFilter)) 
                 return BadRequest("Invalid filter option");
             
             singletonFilter = parsedSingletonFilter;
