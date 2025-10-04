@@ -12,7 +12,6 @@ var beetsConfiguration = new BeetsConfiguration(builder.Configuration);
 builder.Services.AddSingleton(beetsConfiguration);
 
 // Database
-var isDevelopment = builder.Environment.IsDevelopment();
 builder.Services.AddDbContextPool<BeetsContext>(options => {
         options.UseSqlite($"Data Source={beetsConfiguration.DatabasePath};Cache=Shared;Pooling=True");
     },
