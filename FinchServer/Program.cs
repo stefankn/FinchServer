@@ -11,13 +11,21 @@ builder.Configuration.AddEnvironmentVariables();
 var beetsConfiguration = new BeetsConfiguration(builder.Configuration);
 builder.Services.AddSingleton(beetsConfiguration);
 
-// Database
+// Beets database
 builder.Services.AddDbContextPool<BeetsContext>(options => {
         options.UseSqlite($"Data Source={beetsConfiguration.DatabasePath};Cache=Shared;Pooling=True");
     },
     poolSize: 128
 );
 
+// Finch database
+var contentRootPath = builder.Environment.ContentRootPath;
+builder.Services.AddDbContextPool<DataContext>(options => {
+        var path = Path.Combine(contentRootPath, "data", "Finch.db");
+        options.UseSqlite($"Data Source={path};Cache=Shared;Pooling=True");
+    },
+    poolSize: 128
+);
 builder.Services.AddDbContext<DataContext>();
 
 // https://aka.ms/aspnet/openapi
@@ -30,12 +38,6 @@ builder.Services
     });
 
 var app = builder.Build();
-
-// Migrate database
-using (var scope = app.Services.CreateScope()) {
-    var dataContext = scope.ServiceProvider.GetRequiredService<DataContext>();
-    await dataContext.Migrate();
-}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment()) {
