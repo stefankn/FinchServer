@@ -9,27 +9,21 @@ namespace FinchServer.Controllers;
 [ApiController]
 [Route("/api/v1/playlists")]
 public class PlaylistsController(
-    IDbContextFactory<DataContext> dbContextFactory,
-    IDbContextFactory<BeetsContext> beetsDbContextFactory
+    DataContext dataContext,
+    BeetsContext beetsContext
     ): ControllerBase {
-    
-    // - Private Properties
-    
-    private readonly DataContext _dataContext = dbContextFactory.CreateDbContext();
-    private readonly BeetsContext _beetsContext = beetsDbContextFactory.CreateDbContext();
-    
     
     // - Functions
 
     [HttpGet]
     public async Task<ActionResult<PlaylistDto[]>> List() {
-        return await _dataContext.Playlists.Select(p => new PlaylistDto(p)).ToArrayAsync();
+        return await dataContext.Playlists.AsNoTracking().Select(p => new PlaylistDto(p)).ToArrayAsync();
     }
 
     [HttpGet]
     [Route("{id:int}")]
     public async Task<ActionResult<PlaylistDto>> Get(int id) {
-        var playlist = await _dataContext.Playlists.FindAsync(id);
+        var playlist = await dataContext.Playlists.FindAsync(id);
         if (playlist == null) return NotFound();
         
         return new PlaylistDto(playlist);
@@ -38,12 +32,12 @@ public class PlaylistsController(
     [HttpGet]
     [Route("{id:int}/entries")]
     public async Task<ActionResult<PlaylistEntryDto[]>> Entries(int id) {
-        var playlist = await _dataContext.Playlists.FindAsync(id);
+        var playlist = await dataContext.Playlists.FindAsync(id);
         if (playlist == null) return NotFound();
 
-        await _dataContext.Entry(playlist).Collection<PlaylistEntry>(p => p.Entries).LoadAsync();
+        await dataContext.Entry(playlist).Collection<PlaylistEntry>(p => p.Entries).LoadAsync();
         var itemIds = playlist.Entries.Select(e => e.ItemId).ToArray();
-        var items = await _beetsContext.Items.Where(i => itemIds.Contains(i.Id)).ToArrayAsync();
+        var items = await beetsContext.Items.AsNoTracking().Where(i => itemIds.Contains(i.Id)).ToArrayAsync();
         
         var entries = new List<PlaylistEntryDto>();
         foreach (var entry in playlist.Entries) {
@@ -59,13 +53,13 @@ public class PlaylistsController(
     [HttpPost]
     [Route("{id:int}/entries")]
     public async Task<ActionResult<PlaylistEntryDto>> CreateEntry(int id, [FromBody] CreatePlaylistEntryDto body) {
-        var playlist = await _dataContext.Playlists.FindAsync(id);
+        var playlist = await dataContext.Playlists.FindAsync(id);
         if (playlist == null) return NotFound();
 
-        var item = await _beetsContext.Items.FindAsync(body.ItemId);
+        var item = await beetsContext.Items.FindAsync(body.ItemId);
         if (item == null) return NotFound();
         
-        await _dataContext.Entry(playlist).Collection<PlaylistEntry>(p => p.Entries).LoadAsync();
+        await dataContext.Entry(playlist).Collection<PlaylistEntry>(p => p.Entries).LoadAsync();
 
         var currentIndex = playlist.Entries.Count > 0 ? playlist.Entries.Max(e => e.Index) : 0;
         var entry = new PlaylistEntry {
@@ -74,7 +68,7 @@ public class PlaylistsController(
             CreatedAt = DateTime.Now
         };
         playlist.Entries.Add(entry);
-        await _dataContext.SaveChangesAsync();
+        await dataContext.SaveChangesAsync();
 
         return CreatedAtAction(nameof(Get), new { id = entry.Id }, new PlaylistEntryDto(entry, item));
     }
@@ -82,14 +76,14 @@ public class PlaylistsController(
     [HttpDelete]
     [Route("{id:int}/entries/{entryId:int}")]
     public async Task<ActionResult> DeleteEntry(int id, int entryId) {
-        var playlist = await _dataContext.Playlists.FindAsync(id);
+        var playlist = await dataContext.Playlists.FindAsync(id);
         if (playlist == null) return NotFound();
 
-        var entry = await _dataContext.PlaylistEntries.FindAsync(entryId);
+        var entry = await dataContext.PlaylistEntries.FindAsync(entryId);
         if (entry == null) return NotFound();
 
-        _dataContext.PlaylistEntries.Remove(entry);
-        await _dataContext.SaveChangesAsync();
+        dataContext.PlaylistEntries.Remove(entry);
+        await dataContext.SaveChangesAsync();
         
         return NoContent();
     }
@@ -105,7 +99,7 @@ public class PlaylistsController(
         };
         
         if (body.Items != null) {
-            var items = await _beetsContext.Items.Where(i => body.Items.Contains(i.Id)).ToArrayAsync();
+            var items = await beetsContext.Items.Where(i => body.Items.Contains(i.Id)).ToArrayAsync();
             
             foreach (var entry in items.Select((x, i) => new { Value = x, Index = i })) {
                 playlist.Entries.Add(new PlaylistEntry {
@@ -116,8 +110,8 @@ public class PlaylistsController(
             }
         }
 
-        _dataContext.Playlists.Add(playlist);
-        await _dataContext.SaveChangesAsync();
+        dataContext.Playlists.Add(playlist);
+        await dataContext.SaveChangesAsync();
         
         return CreatedAtAction(nameof(Get), new { id = playlist.Id }, new PlaylistDto(playlist));
     }
@@ -125,11 +119,11 @@ public class PlaylistsController(
     [HttpDelete]
     [Route("{id:int}")]
     public async Task<ActionResult> Delete(int id) {
-        var playlist = await _dataContext.Playlists.FindAsync(id);
+        var playlist = await dataContext.Playlists.FindAsync(id);
         if (playlist == null) return NotFound();
         
-        _dataContext.Playlists.Remove(playlist);
-        await _dataContext.SaveChangesAsync();
+        dataContext.Playlists.Remove(playlist);
+        await dataContext.SaveChangesAsync();
         
         return NoContent();
     }

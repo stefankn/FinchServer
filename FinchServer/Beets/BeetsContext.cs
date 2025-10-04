@@ -2,7 +2,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FinchServer.Beets;
 
-public class BeetsContext(BeetsConfiguration configuration): DbContext {
+public class BeetsContext(
+    BeetsConfiguration configuration,
+    ILoggerFactory loggerFactory,
+    IWebHostEnvironment environment
+    ): DbContext {
     
     // - Properties
     
@@ -15,6 +19,12 @@ public class BeetsContext(BeetsConfiguration configuration): DbContext {
     // DbContext Functions
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
-        optionsBuilder.UseSqlite($"Data Source={configuration.DatabasePath}");
+        optionsBuilder
+            .UseSqlite($"Data Source={configuration.DatabasePath};Cache=Shared;Pooling=True");
+
+        if (environment.IsDevelopment()) {
+            optionsBuilder.EnableSensitiveDataLogging();
+            optionsBuilder.UseLoggerFactory(loggerFactory);
+        }
     }
 }

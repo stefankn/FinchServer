@@ -9,8 +9,8 @@ namespace FinchServer.Controllers;
 
 [ApiController]
 [Route("/api/v1/items")]
-public class ItemsController(IDbContextFactory<BeetsContext> dbContextFactory): ControllerBase {
-    
+public class ItemsController(BeetsContext beetsContext): ControllerBase {
+
     // - Functions
 
     [HttpGet]
@@ -21,39 +21,39 @@ public class ItemsController(IDbContextFactory<BeetsContext> dbContextFactory): 
         [FromQuery(Name = "per")] int limit = 20,
         [FromQuery(Name = "page")] int page = 1
         ) {
-        await using var dataContext = await dbContextFactory.CreateDbContextAsync();
-        var query = dataContext.Items.Where(i => i.AlbumId == null);
 
+        SingletonFilter? singletonFilter = null;
         if (!string.IsNullOrEmpty(filter)) {
-            try {
-                // TODO: map dj-mix filter
-                var singletonFilter = Enum.Parse<SingletonFilter>(filter, true);
-                if (singletonFilter == SingletonFilter.Uncategorized) {
-                    query = query.Where(i => i.AlbumType == "");
-                } else {
-                    var types = singletonFilter.Types();
-                    var predicate = PredicateBuilder.New(query);
-                    foreach (var type in types) {
-                        predicate = predicate.Or(i => i.AlbumType.Contains(type));
-                    }
-                    query = query.Where(predicate);
-                }
-            } catch (Exception e) {
+            if (!Enum.TryParse<SingletonFilter>(filter, true, out var parsedSingletonFilter)) 
                 return BadRequest("Invalid filter option");
-            }
+            
+            singletonFilter = parsedSingletonFilter;
         }
         
         var singletonSorting = Sorting.Added;
         var singletonSortingDirection = SortingDirection.Ascending;
-
         if (!string.IsNullOrEmpty(sorting)) {
-            try {
-                singletonSorting = Enum.Parse<Sorting>(sorting, true);
-                if (!string.IsNullOrEmpty(direction)) {
-                    singletonSortingDirection = Enum.Parse<SortingDirection>(direction, true);
-                }
-            } catch (Exception e) {
+            if (!Enum.TryParse(sorting, true, out singletonSorting))
                 return BadRequest("Invalid sorting option");
+        }
+        
+        if (!string.IsNullOrEmpty(direction)) {
+            if (!Enum.TryParse(direction, true, out singletonSortingDirection))
+                return BadRequest("Invalid sorting direction");
+        }
+        
+        var query = beetsContext.Items.AsNoTracking().Where(i => i.AlbumId == null);
+
+        if (singletonFilter.HasValue) {
+            if (singletonFilter == SingletonFilter.Uncategorized) {
+                query = query.Where(i => i.AlbumType == "");
+            } else {
+                var types = singletonFilter.Value.Types();
+                var predicate = PredicateBuilder.New(query);
+                foreach (var type in types) {
+                    predicate = predicate.Or(i => i.AlbumType.Contains(type));
+                }
+                query = query.Where(predicate);
             }
         }
         
@@ -70,18 +70,17 @@ public class ItemsController(IDbContextFactory<BeetsContext> dbContextFactory): 
             _ => query
         };
         
-        query = query.Skip((page - 1) * limit).Take(limit);
-
-        var items = await query.ToArrayAsync();
-        var totalCount = await dataContext.Items.Where(i => i.AlbumId == null).CountAsync();
+        var skip = (page - 1) * limit;
+        var countTask = query.CountAsync();
+        var dataTask = query.Skip(skip).Take(limit).Select(a => new ItemDto(a)).ToArrayAsync();
+        await Task.WhenAll(countTask, dataTask);
         
-        return new Pager<ItemDto>(items.Select(i => new ItemDto(i)).ToArray(), page, totalCount, limit);
+        return new Pager<ItemDto>(await dataTask, page, await countTask, limit);
     }
 
     [HttpGet("{id:int}/stream")]
     public async Task<ActionResult> Stream(int id) {
-        await using var dataContext = await dbContextFactory.CreateDbContextAsync();
-        var path = (await dataContext.Items.FindAsync(id))?.Path;
+        var path = (await beetsContext.Items.FindAsync(id))?.Path;
         if (path == null || !System.IO.File.Exists(path)) return NotFound();
         
         var stream = new FileStream(path, FileMode.Open, FileAccess.Read);

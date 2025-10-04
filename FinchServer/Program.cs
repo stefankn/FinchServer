@@ -9,8 +9,12 @@ builder.Configuration.AddEnvironmentVariables();
 builder.Services.AddTransient<BeetsConfiguration>();
 
 // Database
-builder.Services.AddDbContextFactory<BeetsContext>();
-builder.Services.AddDbContextFactory<DataContext>();
+
+// Use singleton for performance, this is fine for read-only operations.
+// SQLite allows concurrent reads, and there's no transaction state to worry about.
+builder.Services.AddDbContext<BeetsContext>(ServiceLifetime.Singleton);
+
+builder.Services.AddDbContext<DataContext>();
 
 // https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();

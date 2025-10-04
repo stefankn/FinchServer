@@ -1,7 +1,6 @@
 using FinchServer.Beets;
 using FinchServer.Controllers.DTO;
 using FinchServer.Controllers.Utilities;
-using LinqKit;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,7 +9,7 @@ namespace FinchServer.Controllers;
 [ApiController]
 [Route("/api/v1/albums")]
 public class AlbumsController(
-    IDbContextFactory<BeetsContext> dbContextFactory,
+    BeetsContext beetsContext,
     IWebHostEnvironment environment
     ): ControllerBase {
     
@@ -24,38 +23,34 @@ public class AlbumsController(
         [FromQuery(Name = "per")] int limit = 20,
         [FromQuery(Name = "page")] int page = 1
         ) {
-        
-        await using var dataContext = await dbContextFactory.CreateDbContextAsync();
 
-        var query = dataContext.Albums.AsQueryable();
+        AlbumFilter? albumFilter = null;
         if (!string.IsNullOrEmpty(filter)) {
-            try {
-                var albumFilter = Enum.Parse<AlbumFilter>(filter, true);
-                var types = albumFilter.Types();
-                var predicate = PredicateBuilder.New(query);
-                foreach (var type in types) {
-                    predicate = predicate.Or(a => a.AlbumType.Contains(type));
-                }
-                query = query.Where(predicate);
-            } catch (Exception e) {
+            if (!Enum.TryParse<AlbumFilter>(filter, true, out var parsedAlbumFilter)) 
                 return BadRequest("Invalid filter option");
-            }
+            
+            albumFilter = parsedAlbumFilter;
         }
-
+        
         var albumSorting = Sorting.Added;
         var albumSortingDirection = SortingDirection.Ascending;
-
         if (!string.IsNullOrEmpty(sorting)) {
-            try {
-                albumSorting = Enum.Parse<Sorting>(sorting, true);
-                if (!string.IsNullOrEmpty(direction)) {
-                    albumSortingDirection = Enum.Parse<SortingDirection>(direction, true);
-                }
-            } catch (Exception e) {
+            if (!Enum.TryParse(sorting, true, out albumSorting))
                 return BadRequest("Invalid sorting option");
-            }
         }
 
+        if (!string.IsNullOrEmpty(direction)) {
+            if (!Enum.TryParse(direction, true, out albumSortingDirection))
+                return BadRequest("Invalid sorting direction");
+        }
+        
+        var query = beetsContext.Albums.AsNoTracking();
+
+        if (albumFilter.HasValue) {
+            var types = albumFilter.Value.Types();
+            query = query.Where(a => types.Any(type => a.AlbumType.Contains(type)));
+        }
+        
         query = albumSorting switch {
             Sorting.Added => albumSortingDirection == SortingDirection.Ascending
                 ? query.OrderBy(a => a.Added)
@@ -68,38 +63,35 @@ public class AlbumsController(
                 : query.OrderByDescending(a => a.AlbumArtist),
             _ => query
         };
-
-        query = query.Skip((page - 1) * limit).Take(limit);
-
-        var albums = await query.ToArrayAsync();
-        var totalCount = await dataContext.Albums.CountAsync();
         
-        return new Pager<AlbumDto>(albums.Select(a => new AlbumDto(a)).ToArray(), page, totalCount, limit);
+        var skip = (page - 1) * limit;
+        var countTask = query.CountAsync();
+        var dataTask = query.Skip(skip).Take(limit).Select(a => new AlbumDto(a)).ToArrayAsync();
+        await Task.WhenAll(countTask, dataTask);
+    
+        return new Pager<AlbumDto>(await dataTask, page, await countTask, limit);
     }
 
     [HttpGet("{id:int}")]
     public async Task<ActionResult<AlbumDto>> Get(int id) {
-        await using var dataContext = await dbContextFactory.CreateDbContextAsync();
-        var album = await dataContext.Albums.FindAsync(id);
+        var album = await beetsContext.Albums.FindAsync(id);
         
         return album == null ? NotFound() : new AlbumDto(album);
     }
 
     [HttpGet("{id:int}/items")]
     public async Task<ActionResult<ItemDto[]>> Items(int id) {
-        await using var dataContext = await dbContextFactory.CreateDbContextAsync();
-        var album = await dataContext.Albums.FindAsync(id);
+        var album = await beetsContext.Albums.FindAsync(id);
         if (album == null) return NotFound();
         
-        await dataContext.Entry(album).Collection(a => a.Items).LoadAsync();
+        await beetsContext.Entry(album).Collection(a => a.Items).LoadAsync();
         
         return album.Items.Select(i => new ItemDto(i)).ToArray();
     }
 
     [HttpGet("{id:int}/artwork")]
     public async Task<ActionResult> Artwork(int id) {
-        await using var dataContext = await dbContextFactory.CreateDbContextAsync();
-        var artworkPath = (await dataContext.Albums.FindAsync(id))?.ArtworkPath;
+        var artworkPath = (await beetsContext.Albums.FindAsync(id))?.ArtworkPath;
         if (artworkPath == null) return NotFound();
         
         var stream = new FileStream(artworkPath, FileMode.Open);
@@ -108,8 +100,7 @@ public class AlbumsController(
 
     [HttpGet("{id:int}/artwork/thumbnail")]
     public async Task<ActionResult> ArtworkThumbnail(int id) {
-        await using var dataContext = await dbContextFactory.CreateDbContextAsync();
-        var album = await dataContext.Albums.FindAsync(id);
+        var album = await beetsContext.Albums.FindAsync(id);
         if (album == null) return NotFound();
 
         var thumbnailPath = await album.ArtworkThumbnailPath(environment);
