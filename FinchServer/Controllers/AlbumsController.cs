@@ -18,6 +18,7 @@ public class AlbumsController(
     [HttpGet]
     public async Task<ActionResult<Pager<AlbumDto>>> List(
         [FromQuery(Name = "filter")] string? filter,
+        [FromQuery(Name = "search")] string? search,
         [FromQuery(Name = "sort")] string? sorting,
         [FromQuery(Name = "direction")] string? direction,
         [FromQuery(Name = "per")] int limit = 20,
@@ -49,6 +50,19 @@ public class AlbumsController(
         if (albumFilter.HasValue) {
             var types = albumFilter.Value.Types();
             query = query.Where(a => types.Any(type => a.AlbumType.Contains(type)));
+        }
+
+        search = search?.Trim();
+        if (!string.IsNullOrEmpty(search)) {
+            var terms = search.Split([' '], StringSplitOptions.RemoveEmptyEntries);
+            if (terms.Length > 0) {
+                foreach (var term in terms) {
+                    query = query.Where(a =>
+                        EF.Functions.Like(a.AlbumArtist, $"%{term}%") ||
+                        EF.Functions.Like(a.Title, $"%{term}%")
+                    );
+                }
+            }
         }
         
         query = albumSorting switch {
