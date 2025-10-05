@@ -88,7 +88,9 @@ public class AlbumsController(
 
     [HttpGet("{id:int}")]
     public async Task<ActionResult<AlbumDto>> Get(int id) {
-        var album = await beetsContext.Albums.FindAsync(id);
+        var album = await beetsContext.Albums
+            .Include(a => a.Items)
+            .FirstOrDefaultAsync(a => a.Id == id);
         
         return album == null ? NotFound() : new AlbumDto(album);
     }

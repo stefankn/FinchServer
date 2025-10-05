@@ -65,7 +65,7 @@ public class Album {
     [Column("artpath")]
     public byte[]? ArtworkPathData { get; set; }
     
-    public required ICollection<Item> Items { get; set; }
+    public required ICollection<Item>? Items { get; set; }
 
     public string? ArtworkPath => ArtworkPathData == null ? null : Encoding.UTF8.GetString(ArtworkPathData);
     public bool IsArtworkAvailable => ArtworkPathData != null && ArtworkPathData.Length > 0;

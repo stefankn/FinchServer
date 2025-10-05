@@ -25,4 +25,5 @@ public class AlbumDto(Album album) {
     public string? CatalogNumber { get; set; } = !string.IsNullOrEmpty(album.CatalogNumber) ? album.CatalogNumber : null;
     public string? ArtworkPath { get; set; } = album.ArtworkPath;
     public bool IsArtworkAvailable { get; set; } = album.IsArtworkAvailable;
+    public ItemDto[]? Items { get; set; } = album.Items?.Select(i => new ItemDto(i)).ToArray();
 }
