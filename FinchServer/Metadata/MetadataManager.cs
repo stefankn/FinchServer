@@ -7,8 +7,7 @@ namespace FinchServer.Metadata;
 public class MetadataManager(
     IMetadataFetcher metadataFetcher,
     IWebHostEnvironment webHostEnvironment,
-    IHttpClientFactory httpClientFactory,
-    IHostApplicationLifetime applicationLifetime
+    IHttpClientFactory httpClientFactory
 ): IMetadataManager {
     
     // - Functions
@@ -17,14 +16,8 @@ public class MetadataManager(
         try {
             var artistMetadata = await metadataFetcher.FetchArtistArtwork(discogsArtistId);
             
-            _ = Task.Run(async () => {
-                try {
-                    var tasks = artistMetadata.Artworks.Select(a => Download(a, artistMetadata));
-                    await Task.WhenAll(tasks);
-                } catch (Exception e) when (e is not OperationCanceledException) {
-                    Console.WriteLine($"Background download failed: {e}");
-                }
-            }, applicationLifetime.ApplicationStopping);
+            var tasks = artistMetadata.Artworks.Select(a => Download(a, artistMetadata));
+            await Task.WhenAll(tasks);
         
             return artistMetadata;
         } catch (Exception e) {
@@ -59,7 +52,7 @@ public class MetadataManager(
 
                 // Create thumbnail for regular images
                 if (artwork.Type == ImageType.Image) {
-                    var thumbnailFilename = Path.Combine(directory, $"thumb_{filename}");
+                    var thumbnailFilename = $"thumb_{filename}";
                     var thumbnailPath = Path.Combine(directory, thumbnailFilename);
                     
                     using var image = await Image.LoadAsync(path);
