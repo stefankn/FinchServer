@@ -6,25 +6,61 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace FinchServer.Migrations
 {
     /// <inheritdoc />
-    public partial class CreatePlaylists : Migration
+    public partial class CreateInitial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "artists",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 255, nullable: false),
+                    MusicBrainzId = table.Column<string>(type: "TEXT", maxLength: 255, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_artists", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "playlists",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    name = table.Column<string>(type: "TEXT", nullable: false),
-                    description = table.Column<string>(type: "TEXT", nullable: true),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 255, nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_playlists", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "artist_image",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    FileName = table.Column<string>(type: "TEXT", maxLength: 255, nullable: false),
+                    ImageType = table.Column<string>(type: "TEXT", nullable: false),
+                    ArtistId = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_artist_image", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_artist_image_artists_ArtistId",
+                        column: x => x.ArtistId,
+                        principalTable: "artists",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -50,6 +86,11 @@ namespace FinchServer.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_artist_image_ArtistId",
+                table: "artist_image",
+                column: "ArtistId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_playlist_entries_PlaylistId",
                 table: "playlist_entries",
                 column: "PlaylistId");
@@ -59,7 +100,13 @@ namespace FinchServer.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "artist_image");
+
+            migrationBuilder.DropTable(
                 name: "playlist_entries");
+
+            migrationBuilder.DropTable(
+                name: "artists");
 
             migrationBuilder.DropTable(
                 name: "playlists");

@@ -1,12 +1,18 @@
 using System.Text.Json;
+using FinchServer.Metadata;
+using FinchServer.Metadata.FanartTV;
 using FinchServer.Beets;
 using FinchServer.Database;
+using FinchServer.Utilities;
 using Microsoft.EntityFrameworkCore;
+
+DotEnv.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Configuration
 builder.Configuration.AddEnvironmentVariables();
+builder.Services.AddHttpClient();
 
 var beetsConfiguration = new BeetsConfiguration(builder.Configuration);
 builder.Services.AddSingleton(beetsConfiguration);
@@ -27,6 +33,10 @@ builder.Services.AddDbContextPool<DataContext>(options => {
     poolSize: 128
 );
 builder.Services.AddDbContext<DataContext>();
+
+// Metadata
+builder.Services.AddTransient<IMetadataFetcher, FanartTvMetadataFetcher>();
+builder.Services.AddSingleton<IMetadataManager, MetadataManager>();
 
 // https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
