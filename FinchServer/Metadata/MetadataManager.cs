@@ -10,7 +10,16 @@ public class MetadataManager(
     IHttpClientFactory httpClientFactory
 ): IMetadataManager {
     
+    // - Properties
+    
+    // IMetadataManager Properties
+    
+    public string ArtistArtworkPath => Path.Combine(webHostEnvironment.ContentRootPath, "Resources", "Artists");
+    
+    
     // - Functions
+    
+    // IMetadataManager Functions
 
     public async Task<ArtistMetadata?> FetchArtistMetaData(int discogsArtistId) {
         try {
@@ -31,7 +40,7 @@ public class MetadataManager(
 
     private async Task Download(ArtistMetadata.Artwork artwork, ArtistMetadata metadata) {
         try {
-            var directory = Path.Combine(webHostEnvironment.ContentRootPath, "Resources", "Artists", metadata.Id.ToString());
+            var directory = Path.Combine(ArtistArtworkPath, metadata.Id.ToString());
             Directory.CreateDirectory(directory);
 
             var uri = new Uri(artwork.Url);
