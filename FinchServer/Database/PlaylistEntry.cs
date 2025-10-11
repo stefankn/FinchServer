@@ -12,10 +12,8 @@ public class PlaylistEntry {
     [Key]
     public int Id { get; set; }
     
-    [Column("index")]
     public required int Index { get; set; }
     
-    [Column("item_id")]
     public required int ItemId { get; set; }
 
     public DateTime CreatedAt { get; set; }

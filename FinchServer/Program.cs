@@ -28,7 +28,9 @@ builder.Services.AddDbContextPool<BeetsContext>(options => {
 var contentRootPath = builder.Environment.ContentRootPath;
 builder.Services.AddDbContextPool<DataContext>(options => {
         var path = Path.Combine(contentRootPath, "data", "Finch.db");
-        options.UseSqlite($"Data Source={path};Cache=Shared;Pooling=True");
+        options
+            .UseSqlite($"Data Source={path};Cache=Shared;Pooling=True")
+            .UseSnakeCaseNamingConvention();
     },
     poolSize: 128
 );
