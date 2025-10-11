@@ -15,9 +15,9 @@ public class AlbumDto(Album album) {
     public string? Country { get; set; } = album.Country;
     public int Year { get; set; } = album.Year;
     public int DiscCount { get; set; } = album.DiscCount;
-    public int? DiscogsAlbumId { get; set; } = album.DiscogsAlbumId;
-    public int? DiscogsArtistId { get; set; } = album.DiscogsArtistId;
-    public int? DiscogsLabelId { get; set; } = album.DiscogsLabelId;
+    public int? DiscogsAlbumId { get; set; } = (album.DiscogsAlbumId ?? 0) > 0 ? album.DiscogsAlbumId : null;
+    public int? DiscogsArtistId { get; set; } = (album.DiscogsArtistId ?? 0) > 0 ? album.DiscogsArtistId : null;
+    public int? DiscogsLabelId { get; set; } = (album.DiscogsLabelId ?? 0) > 0 ? album.DiscogsLabelId : null;
     public DateTimeOffset AddedAt { get; set; } = DateTimeOffset.FromUnixTimeSeconds((long)album.Added);
     public string? Label { get; set; } = album.Label;
     public string? Barcode { get; set; } = !string.IsNullOrEmpty(album.Barcode) ? album.Barcode : null;

@@ -18,5 +18,5 @@ public class ItemDto(Item item) {
     public string? Genre { get; set; } = !string.IsNullOrEmpty(item.Genre) ? item.Genre : null;
     public string? Style { get; set; } = !string.IsNullOrEmpty(item.Style) ? item.Style : null;
     public string? AlbumType { get; set; } = item.AlbumType;
-    public int? DiscogsArtistId { get; set; } = item.DiscogsArtistId;
+    public int? DiscogsArtistId { get; set; } = (item.DiscogsArtistId ?? 0) > 0 ? item.DiscogsArtistId : null;
 }
