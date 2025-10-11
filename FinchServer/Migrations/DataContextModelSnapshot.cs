@@ -20,87 +20,107 @@ namespace FinchServer.Migrations
             modelBuilder.Entity("FinchServer.Database.Artist", b =>
                 {
                     b.Property<int>("Id")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("MusicBrainzId")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasColumnName("music_brainz_id");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasColumnName("name");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasColumnName("updated_at");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_artists");
 
-                    b.ToTable("artists");
+                    b.ToTable("artists", (string)null);
                 });
 
             modelBuilder.Entity("FinchServer.Database.ArtistImage", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("id");
 
                     b.Property<int>("ArtistId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("artist_id");
 
                     b.Property<string>("FileName")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasColumnName("file_name");
 
                     b.Property<string>("ImageType")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasColumnName("image_type");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_artist_image");
 
-                    b.HasIndex("ArtistId");
+                    b.HasIndex("ArtistId")
+                        .HasDatabaseName("ix_artist_image_artist_id");
 
-                    b.ToTable("artist_image");
+                    b.ToTable("artist_image", (string)null);
                 });
 
             modelBuilder.Entity("FinchServer.Database.Playlist", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("Description")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("description");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasColumnName("name");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasColumnName("updated_at");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_playlists");
 
-                    b.ToTable("playlists");
+                    b.ToTable("playlists", (string)null);
                 });
 
             modelBuilder.Entity("FinchServer.Database.PlaylistEntry", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasColumnName("created_at");
 
                     b.Property<int>("Index")
                         .HasColumnType("INTEGER")
@@ -111,13 +131,16 @@ namespace FinchServer.Migrations
                         .HasColumnName("item_id");
 
                     b.Property<int>("PlaylistId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("playlist_id");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_playlist_entries");
 
-                    b.HasIndex("PlaylistId");
+                    b.HasIndex("PlaylistId")
+                        .HasDatabaseName("ix_playlist_entries_playlist_id");
 
-                    b.ToTable("playlist_entries");
+                    b.ToTable("playlist_entries", (string)null);
                 });
 
             modelBuilder.Entity("FinchServer.Database.ArtistImage", b =>
@@ -126,7 +149,8 @@ namespace FinchServer.Migrations
                         .WithMany("Images")
                         .HasForeignKey("ArtistId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_artist_image_artists_artist_id");
 
                     b.Navigation("Artist");
                 });
@@ -137,7 +161,8 @@ namespace FinchServer.Migrations
                         .WithMany("Entries")
                         .HasForeignKey("PlaylistId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_playlist_entries_playlists_playlist_id");
 
                     b.Navigation("Playlist");
                 });

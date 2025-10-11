@@ -15,51 +15,51 @@ namespace FinchServer.Migrations
                 name: "artists",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 255, nullable: false),
-                    MusicBrainzId = table.Column<string>(type: "TEXT", maxLength: 255, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    id = table.Column<int>(type: "INTEGER", nullable: false),
+                    name = table.Column<string>(type: "TEXT", maxLength: 255, nullable: false),
+                    music_brainz_id = table.Column<string>(type: "TEXT", maxLength: 255, nullable: false),
+                    created_at = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_artists", x => x.Id);
+                    table.PrimaryKey("pk_artists", x => x.id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "playlists",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                    id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 255, nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    name = table.Column<string>(type: "TEXT", maxLength: 255, nullable: false),
+                    description = table.Column<string>(type: "text", nullable: true),
+                    created_at = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_playlists", x => x.Id);
+                    table.PrimaryKey("pk_playlists", x => x.id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "artist_image",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                    id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    FileName = table.Column<string>(type: "TEXT", maxLength: 255, nullable: false),
-                    ImageType = table.Column<string>(type: "TEXT", nullable: false),
-                    ArtistId = table.Column<int>(type: "INTEGER", nullable: false)
+                    file_name = table.Column<string>(type: "TEXT", maxLength: 255, nullable: false),
+                    image_type = table.Column<string>(type: "TEXT", nullable: false),
+                    artist_id = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_artist_image", x => x.Id);
+                    table.PrimaryKey("pk_artist_image", x => x.id);
                     table.ForeignKey(
-                        name: "FK_artist_image_artists_ArtistId",
-                        column: x => x.ArtistId,
+                        name: "fk_artist_image_artists_artist_id",
+                        column: x => x.artist_id,
                         principalTable: "artists",
-                        principalColumn: "Id",
+                        principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -67,33 +67,33 @@ namespace FinchServer.Migrations
                 name: "playlist_entries",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                    id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     index = table.Column<int>(type: "INTEGER", nullable: false),
                     item_id = table.Column<int>(type: "INTEGER", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    PlaylistId = table.Column<int>(type: "INTEGER", nullable: false)
+                    created_at = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    playlist_id = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_playlist_entries", x => x.Id);
+                    table.PrimaryKey("pk_playlist_entries", x => x.id);
                     table.ForeignKey(
-                        name: "FK_playlist_entries_playlists_PlaylistId",
-                        column: x => x.PlaylistId,
+                        name: "fk_playlist_entries_playlists_playlist_id",
+                        column: x => x.playlist_id,
                         principalTable: "playlists",
-                        principalColumn: "Id",
+                        principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_artist_image_ArtistId",
+                name: "ix_artist_image_artist_id",
                 table: "artist_image",
-                column: "ArtistId");
+                column: "artist_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_playlist_entries_PlaylistId",
+                name: "ix_playlist_entries_playlist_id",
                 table: "playlist_entries",
-                column: "PlaylistId");
+                column: "playlist_id");
         }
 
         /// <inheritdoc />
