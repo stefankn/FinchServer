@@ -54,6 +54,9 @@ public class Item {
     [Column("added")]
     public required double Added { get; set; }
     
+    [Column("discogs_artistid")]
+    public int? DiscogsArtistId { get; set; }
+    
     public Album? Album { get; set; }
     
     public string? Path => Encoding.UTF8.GetString(PathData);
