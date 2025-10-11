@@ -97,12 +97,10 @@ public class AlbumsController(
 
     [HttpGet("{id:int}/items")]
     public async Task<ActionResult<ItemDto[]>> Items(int id) {
-        var album = await beetsContext.Albums.FindAsync(id);
+        var album = await beetsContext.Albums.Include(a => a.Items).FirstOrDefaultAsync(a => a.Id == id);
         if (album == null) return NotFound();
-        
-        await beetsContext.Entry(album).Collection(a => a.Items).LoadAsync();
-        
-        return album.Items.Select(i => new ItemDto(i)).ToArray();
+
+        return album.Items?.Select(i => new ItemDto(i)).ToArray() ?? [];
     }
 
     [HttpGet("{id:int}/artwork")]
