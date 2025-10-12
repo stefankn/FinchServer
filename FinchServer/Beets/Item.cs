@@ -59,5 +59,15 @@ public class Item {
     
     public Album? Album { get; set; }
     
-    public string? Path => Encoding.UTF8.GetString(PathData);
+    public string Path => Encoding.UTF8.GetString(PathData);
+    public TimeSpan Duration => TimeSpan.FromSeconds(Length);
+
+    public string DurationDescription {
+        get {
+            var duration = Duration;
+            return duration.Hours > 0
+                ? $"{duration.Hours:D2}:{duration.Minutes:D2}:{duration.Seconds:D2}"
+                : $"{duration.Minutes:D2}:{duration.Seconds:D2}";
+        }
+    }
 }

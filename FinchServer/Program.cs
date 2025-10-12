@@ -24,6 +24,7 @@ builder.Services.AddDbContextPool<BeetsContext>(options => {
     },
     poolSize: 128
 );
+builder.Services.AddDbContextFactory<BeetsContext>();
 
 // Finch database
 var contentRootPath = builder.Environment.ContentRootPath;
@@ -35,7 +36,7 @@ builder.Services.AddDbContextPool<DataContext>(options => {
     },
     poolSize: 128
 );
-builder.Services.AddDbContext<DataContext>();
+builder.Services.AddDbContextFactory<DataContext>();
 
 // Metadata
 builder.Services.AddTransient<IMetadataFetcher, FanartTvMetadataFetcher>();

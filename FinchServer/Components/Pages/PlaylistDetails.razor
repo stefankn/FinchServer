@@ -1,0 +1,120 @@
+@page "/playlists/{playlistId:int}"
+
+@using FinchServer.Beets
+@using FinchServer.Components.Modals
+@using FinchServer.Database
+@using Microsoft.EntityFrameworkCore
+
+@inject IDbContextFactory<DataContext> DbContextFactory
+@inject IDbContextFactory<BeetsContext> BeetsDbContextFactory
+
+@if (_playlist != null) {
+    <div class="flex flex-col gap-6">
+        <div class="breadcrumbs text-sm">
+            <ul>
+                <li><NavLink href="/playlists">Playlists</NavLink></li>
+                <li>@_playlist.Name</li>
+            </ul>
+        </div>
+        
+        <div class="card lg:card-side bg-base-100 shadow-sm">
+            <figure class="size-48 bg-base-200">
+            </figure>
+            <div class="card-body">
+                <h2 class="card-title">@_playlist.Name</h2>
+                <p>@_playlist.Description</p>
+            </div>
+        </div>
+        
+        <div>
+            <table class="table table-sm table-zebra">
+                <thead>
+                <tr>
+                    <td>Artist</td>
+                    <td>Title</td>
+                    <td>Duration</td>
+                    <td>Discogs artist id</td>
+                    <td></td>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var entry in _entries) {
+                    <tr>
+                        <td>@entry.Item.Artist</td>
+                        <td>@entry.Item.Title</td>
+                        <td>@entry.Item.DurationDescription</td>
+                        <td>@entry.Item.DiscogsArtistId</td>
+                        <td class="text-right">
+                            <button class="btn btn-sm btn-square" @onclick="() => _editingItem = entry.Item">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <EditItemModal @bind-Item="_editingItem" OnItemUpdate="Update"></EditItemModal>
+}
+
+@code {
+    
+    // - Types
+
+    private class PlaylistEntry {
+        public required int EntryId { get; init; }
+        public required int Index { get; init; }
+        public required Item Item { get; init; }
+        public required DateTimeOffset CreatedAt { get; init; }
+    }
+    
+    
+    // - Properties
+
+    [Parameter, EditorRequired]
+    public int PlaylistId { get; set; }
+    
+    
+    // - Private Properties
+    
+    private Playlist? _playlist;
+    private PlaylistEntry[] _entries = [];
+    private Item? _editingItem;
+    
+    
+    // - Functions
+    
+    protected override async Task OnInitializedAsync() {
+        await Update();
+    }
+    
+    
+    // - Private Functions
+
+    private async Task Update() {
+        await using var context = await DbContextFactory.CreateDbContextAsync();
+
+        _playlist = await context.Playlists.Include(p => p.Entries).FirstOrDefaultAsync(p => p.Id == PlaylistId);
+        if (_playlist != null) {
+            var itemIds = _playlist.Entries.Select(e => e.ItemId).ToArray();
+            if (itemIds.Length > 0) {
+                await using var beetsContext = await BeetsDbContextFactory.CreateDbContextAsync();
+                var items = await beetsContext.Items.AsNoTracking().Where(i => itemIds.Contains(i.Id)).ToArrayAsync();
+                
+                var entries = new List<PlaylistEntry>();
+                foreach (var entry in _playlist.Entries) {
+                    var item = items.FirstOrDefault(i => i.Id == entry.ItemId);
+                    if (item != null) {
+                        entries.Add(new PlaylistEntry{ EntryId = entry.Id, Index = entry.Index, Item = item, CreatedAt = entry.CreatedAt });
+                    }
+                }
+
+                _entries = entries.ToArray();
+            }
+        }
+    }
+}

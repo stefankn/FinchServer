@@ -1,0 +1,86 @@
+@using FinchServer.Beets
+@using FinchServer.Components.Elements
+@using Microsoft.EntityFrameworkCore
+
+@inject IDbContextFactory<BeetsContext> DbContextFactory
+
+<Modal @bind-IsVisible="IsVisible" Title="@Title">
+    <Content>
+        <fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4">
+            <label class="label">Discogs artist id</label>
+            <input type="number" class="input" placeholder="Discogs artist Id" @bind="_discogsArtistId" />
+        </fieldset>
+    </Content>
+    <Actions>
+        @if (_isLoading) {
+            <span class="loading loading-spinner loading-md"></span>
+        }
+        <button class="btn" @onclick="Close" disabled="@_isLoading">Cancel</button>
+        <button class="btn btn-primary" @onclick="Save" disabled="@_isLoading">Update</button>
+    </Actions>
+</Modal>
+
+@code {
+    
+    // - Properties
+
+    [Parameter, EditorRequired]
+    public Item? Item { get; set; }
+    
+    [Parameter]
+    public EventCallback<Item?> ItemChanged { get; set; }
+    
+    [Parameter]
+    public EventCallback<Item> OnItemUpdate { get; set; }
+    
+    
+    
+    // - Private Properties
+
+    private string Title => $"{Item?.Artist} - {Item?.Title}";
+    private bool _isLoading;
+
+    private int? _discogsArtistId;
+    
+    private bool IsVisible {
+        get => Item != null;
+        set {
+            if (value) return;
+            
+            Item = null;
+            ItemChanged.InvokeAsync(null);
+        }
+    }
+    
+    // - Functions
+    
+    protected override void OnParametersSet() {
+        if (Item == null) return;
+
+        _discogsArtistId = Item.DiscogsArtistId;
+    }
+
+
+    // - Private Functions
+
+    private async Task Save() {
+        if (Item == null) return;
+
+        _isLoading = true;
+
+        await using var context = await DbContextFactory.CreateDbContextAsync();
+        var item = await context.Items.FindAsync(Item.Id);
+        if (item != null) {
+            item.DiscogsArtistId = _discogsArtistId;
+            await context.SaveChangesAsync();
+            Close();
+
+            await OnItemUpdate.InvokeAsync(item);
+        }
+    }
+    
+    private void Close() {
+        IsVisible = false;
+        _isLoading = false;
+    }
+}

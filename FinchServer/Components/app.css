@@ -1,3 +1,11 @@
 @import "tailwindcss";
 
 @plugin "daisyui";
+
+.navigation {
+    @apply text-base-content/50;
+}
+
+.navigation .active {
+    @apply text-base-content font-semibold;
+}

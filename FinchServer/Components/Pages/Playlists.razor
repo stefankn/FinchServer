@@ -1,0 +1,46 @@
+@page "/playlists"
+
+@using FinchServer.Database
+@using Microsoft.EntityFrameworkCore
+
+@inject IDbContextFactory<DataContext> DbContextFactory
+
+<div class="flex flex-col gap-6">
+    <div class="breadcrumbs text-sm">
+        <ul>
+            <li>Playlists</li>
+        </ul>
+    </div>
+    
+    <div class="flex gap-2">
+        @foreach (var playlist in _playlists) {
+            <NavLink href="@($"/playlists/{playlist.Id}")">
+                <div class="card bg-base-100 w-64 shadow-sm">
+                    <figure class="bg-base-200 h-32">
+                    </figure>
+                    <div class="card-body">
+                        <h2 class="card-title">@playlist.Name</h2>
+                        <p>@playlist.Description</p>
+                    </div>
+                </div>
+            </NavLink>
+        }
+    </div>
+</div>
+
+@code {
+    
+    // - Private Properties
+
+    private Playlist[] _playlists = [];
+    
+    
+    // - Functions
+
+    protected override async Task OnInitializedAsync() {
+        await using var context = await DbContextFactory.CreateDbContextAsync();
+
+        _playlists = await context.Playlists.AsNoTracking().ToArrayAsync();
+    }
+
+}
