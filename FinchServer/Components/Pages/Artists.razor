@@ -1,0 +1,56 @@
+@page "/artists"
+@using FinchServer.Database
+@using FinchServer.Metadata
+@using Microsoft.EntityFrameworkCore
+
+@inject IDbContextFactory<DataContext> DbContextFactory
+
+<div class="flex flex-col gap-6">
+    <div class="breadcrumbs text-sm">
+        <ul>
+            <li>Artists</li>
+        </ul>
+    </div>
+    
+    <div class="flex gap-2">
+        @foreach (var artist in _artists) {
+            <NavLink href="@($"/artists/{artist.Id}")">
+                <div class="card bg-base-100 w-48 shadow-sm">
+                    <figure class="bg-base-200 object-cover">
+                        @{ var imagePath = ImagePath(artist); }
+                        <img src="@(imagePath ?? "/images/artist-placeholder.jpg")" alt="@artist.Name" />
+                    </figure>
+                    <div class="card-body">
+                        <h2 class="card-title">@artist.Name</h2>
+                    </div>
+                </div>
+            </NavLink>
+        }
+    </div>
+</div>
+
+@code {
+    
+    // - Private Properties
+
+    private Artist[] _artists = [];
+    
+    
+    // - Functions
+
+    protected override async Task OnInitializedAsync() {
+        await using var context = await DbContextFactory.CreateDbContextAsync();
+
+        _artists = await context.Artists.Include(a => a.Images).ToArrayAsync();
+    }
+
+    
+    // - Private Functions
+
+    private string? ImagePath(Artist artist) {
+        var image = artist.Images.FirstOrDefault(i => i.ImageType == ImageType.Thumbnail);
+        if (image == null) return null;
+        
+        return Path.Combine("content", "artists", artist.Id.ToString(), image.FileName);
+    }
+}

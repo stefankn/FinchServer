@@ -14,7 +14,7 @@ public class MetadataManager(
     
     // IMetadataManager Properties
     
-    public string ArtistArtworkPath => Path.Combine(webHostEnvironment.ContentRootPath, "Resources", "Artists");
+    public string ArtistArtworkPath => Path.Combine(webHostEnvironment.WebRootPath, "content", "artists");
     
     
     // - Functions

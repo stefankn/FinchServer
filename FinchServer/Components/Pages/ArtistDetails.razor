@@ -1,0 +1,65 @@
+@page "/artists/{artistId:int}"
+
+@using FinchServer.Database
+@using Microsoft.EntityFrameworkCore
+
+@inject IDbContextFactory<DataContext> DbContextFactory
+
+@if (_artist != null) {
+    <div class="flex flex-col gap-6">
+        <div class="breadcrumbs text-sm">
+            <ul>
+                <li><NavLink href="/artists">Artists</NavLink></li>
+                <li>@_artist.Name</li>
+            </ul>
+        </div>
+        
+        <div class="card lg:card-side bg-base-100 shadow-sm">
+            <figure class="size-48 bg-base-200">
+                @{ var imagePath = ImagePath(_artist.Images.FirstOrDefault(i => i.ImageType == ImageType.Thumbnail)); }
+                <img src="@(imagePath ?? "/images/artist-placeholder.jpg")" alt="@_artist.Name" />
+            </figure>
+            <div class="card-body">
+                <div class="flex justify-between items-start">
+                    <h2 class="card-title">@_artist.Name</h2>
+
+                    @{ var logoImagePath = ImagePath(_artist.Images.FirstOrDefault(i => i.ImageType == ImageType.Logo)); }
+                    @if (logoImagePath != null) {
+                        <img src="@logoImagePath" class="h-24" alt="@_artist.Name"/>
+                    }
+                </div>
+                
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    
+    // - Properties
+    
+    [Parameter, EditorRequired]
+    public required int ArtistId { get; set; }
+    
+
+    // - Private Properties
+
+    private Artist? _artist;
+    
+    
+    // - Functions
+
+    protected override async Task OnInitializedAsync() {
+        await using var context = await DbContextFactory.CreateDbContextAsync();
+
+        _artist = await context.Artists.Include(a => a.Images).FirstOrDefaultAsync(a => a.Id == ArtistId);
+    }
+
+    
+    // - Private Functions
+    
+    private string? ImagePath(ArtistImage? image) {
+        if (_artist == null || image == null) return null;
+        return Path.Combine("content", "artists", _artist.Id.ToString(), image.FileName);
+    }
+}

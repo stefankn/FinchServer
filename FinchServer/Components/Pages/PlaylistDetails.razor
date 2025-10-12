@@ -3,10 +3,12 @@
 @using FinchServer.Beets
 @using FinchServer.Components.Modals
 @using FinchServer.Database
+@using FinchServer.Metadata
 @using Microsoft.EntityFrameworkCore
 
 @inject IDbContextFactory<DataContext> DbContextFactory
 @inject IDbContextFactory<BeetsContext> BeetsDbContextFactory
+@inject IMetadataManager MetadataManager
 
 @if (_playlist != null) {
     <div class="flex flex-col gap-6">
@@ -50,6 +52,11 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
                                 </svg>
                             </a>
+                            <button disabled="@(entry.Item.DiscogsArtistId == 0 || _isFetchingArtist)" class="btn btn-sm btn-square" @onclick="() => FetchArtistInfo(entry.Item)">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 8.25H7.5a2.25 2.25 0 0 0-2.25 2.25v9a2.25 2.25 0 0 0 2.25 2.25h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25H15M9 12l3 3m0 0 3-3m-3 3V2.25" />
+                                </svg>
+                            </button>
                             <button class="btn btn-sm btn-square" @onclick="() => _editingItem = entry.Item">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"/>
@@ -89,6 +96,7 @@
     private Playlist? _playlist;
     private PlaylistEntry[] _entries = [];
     private Item? _editingItem;
+    private bool _isFetchingArtist;
     
     
     // - Functions
@@ -121,5 +129,42 @@
                 _entries = entries.ToArray();
             }
         }
+    }
+
+    private async Task FetchArtistInfo(Item item) {
+        if (item.DiscogsArtistId == null) return;
+
+        _isFetchingArtist = true;
+        await InvokeAsync(StateHasChanged);
+        
+        await using var context = await DbContextFactory.CreateDbContextAsync();
+        
+        var artist = await context.Artists
+            .Include(a => a.Images)
+            .FirstOrDefaultAsync(a => a.Id == item.DiscogsArtistId.Value);
+
+        if (artist == null) {
+            var artistMetadata = await MetadataManager.FetchArtistMetaData(item.DiscogsArtistId.Value);
+            if (artistMetadata != null) {
+                artist = new Artist {
+                    Id = artistMetadata.Id,
+                    MusicBrainzId = artistMetadata.MusicBrainzId,
+                    Name = artistMetadata.Name,
+                    Images = new List<ArtistImage>(),
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now,
+                };
+            
+                foreach (var artwork in artistMetadata.LocalArtworks) {
+                    artist.Images.Add(new ArtistImage { FileName = artwork.FileName, ImageType = artwork.Type });
+                }
+            
+                context.Artists.Add(artist);
+                await context.SaveChangesAsync();
+            }
+        }
+        
+        _isFetchingArtist = false;
+        await InvokeAsync(StateHasChanged);
     }
 }
