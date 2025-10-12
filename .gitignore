@@ -7,3 +7,5 @@ riderModule.iml
 *.DotSettings.user
 .DS_Store
 .env
+node_modules
+*/wwwroot/app.css

@@ -29,4 +29,13 @@
       <Folder Include="wwwroot\" />
     </ItemGroup>
 
+    <Target Name="NpmInstall" BeforeTargets="CustomLibs">
+        <Exec Command="npm install" />
+    </Target>
+
+    <Target Name="CustomLibs" BeforeTargets="Compile">
+        <Exec Condition="'$(Configuration)' != 'Release' " Command="npx @tailwindcss/cli -i ./Components/app.css -o ./wwwroot/app.css" />
+        <Exec Condition="'$(Configuration)' == 'Release' " Command="npx @tailwindcss/cli -i ./Components/app.css -o ./wwwroot/app.css --minify" />
+    </Target>
+
 </Project>
