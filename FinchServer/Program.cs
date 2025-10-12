@@ -55,6 +55,7 @@ builder.Services
 builder.Services
     .AddRazorComponents()
     .AddInteractiveServerComponents();
+builder.WebHost.UseStaticWebAssets();
 
 var app = builder.Build();
 
