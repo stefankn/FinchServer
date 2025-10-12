@@ -25,6 +25,10 @@ public class ArtistsController(
             Id = artist.Id,
             Name = artist.Name,
             MusicBrainzId = artist.MusicBrainzId,
+            Image = artist.Images.FirstOrDefault(i => i.ImageType == ImageType.Image)?.FileName,
+            Thumbnail = artist.Images.FirstOrDefault(i => i.ImageType == ImageType.Thumbnail)?.FileName,
+            BackgroundImage = artist.Images.FirstOrDefault(i => i.ImageType == ImageType.Background)?.FileName,
+            Logo = artist.Images.FirstOrDefault(i => i.ImageType == ImageType.Logo)?.FileName
         };
     }
 
