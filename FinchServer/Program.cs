@@ -2,6 +2,7 @@ using System.Text.Json;
 using FinchServer.Metadata;
 using FinchServer.Metadata.FanartTV;
 using FinchServer.Beets;
+using FinchServer.Components;
 using FinchServer.Database;
 using FinchServer.Utilities;
 using Microsoft.EntityFrameworkCore;
@@ -49,6 +50,11 @@ builder.Services
         options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
     });
 
+// Blazor
+builder.Services
+    .AddRazorComponents()
+    .AddInteractiveServerComponents();
+
 var app = builder.Build();
 
 // Apply database migrations
@@ -57,12 +63,22 @@ using (var scope = app.Services.CreateScope()) {
     db.Database.Migrate();
 }
 
+app.MapControllers();
+
+app.UseStaticFiles();
+app.UseRouting();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment()) {
     app.MapOpenApi();
 }
 
 app.UseHttpsRedirection();
-app.MapControllers();
+app.UseAntiforgery();
+app.MapStaticAssets();
+
+app
+    .MapRazorComponents<App>()
+    .AddInteractiveServerRenderMode();
 
 app.Run();
