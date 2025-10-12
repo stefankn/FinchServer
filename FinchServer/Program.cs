@@ -6,6 +6,7 @@ using FinchServer.Components;
 using FinchServer.Database;
 using FinchServer.Utilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 
 DotEnv.Load();
 
@@ -68,6 +69,11 @@ using (var scope = app.Services.CreateScope()) {
 app.MapControllers();
 
 app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions {
+    FileProvider = new PhysicalFileProvider(Path.Combine(builder.Environment.ContentRootPath, "Resources", "Artists")),
+    RequestPath = "/files/artists"
+});
+
 app.UseRouting();
 
 // Configure the HTTP request pipeline.

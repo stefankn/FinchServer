@@ -50,7 +50,7 @@
     private string? ImagePath(Artist artist) {
         var image = artist.Images.FirstOrDefault(i => i.ImageType == ImageType.Thumbnail);
         if (image == null) return null;
-        
-        return Path.Combine("content", "artists", artist.Id.ToString(), image.FileName);
+
+        return Path.Combine("files", "artists", artist.Id.ToString(), image.FileName);
     }
 }

@@ -60,6 +60,6 @@
     
     private string? ImagePath(ArtistImage? image) {
         if (_artist == null || image == null) return null;
-        return Path.Combine("content", "artists", _artist.Id.ToString(), image.FileName);
+        return Path.Combine("files", "artists", _artist.Id.ToString(), image.FileName);
     }
 }
