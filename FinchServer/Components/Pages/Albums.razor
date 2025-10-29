@@ -1,0 +1,61 @@
+@page "/albums"
+
+@using FinchServer.Beets
+@using Microsoft.EntityFrameworkCore
+
+@inject IDbContextFactory<BeetsContext> DbContextFactory
+@inject NavigationManager NavigationManager
+
+<div class="flex flex-col gap-6">
+    <div class="breadcrumbs text-sm">
+        <ul>
+            <li>Albums</li>
+        </ul>
+    </div>
+    
+    <div>
+        <table class="table table-zebra">
+            <thead>
+            <tr>
+                <th>Artist</th>
+                <th>Title</th>
+                <th>Added at</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var album in _albums) {
+                <tr @onclick="() => OnAlbumSelect(album)">
+                    <td>@album.AlbumArtist</td>
+                    <td>@album.Title</td>
+                    <td>@album.AddedAt.ToLongDateString()</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+@code {
+    
+    // - Private Properties
+
+    private Album[] _albums = [];
+    
+
+    // - Functions
+
+    protected override async Task OnInitializedAsync() {
+        if (!RendererInfo.IsInteractive) return;
+
+        await using var context = await DbContextFactory.CreateDbContextAsync();
+        _albums = await context.Albums.OrderBy(a => a.AlbumArtist).ToArrayAsync();
+    }
+
+    
+    // - Private Functions
+
+    private void OnAlbumSelect(Album album) {
+        NavigationManager.NavigateTo($"/albums/{album.Id}");
+    }
+}

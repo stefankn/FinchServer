@@ -1,6 +1,6 @@
 @page "/artists"
+
 @using FinchServer.Database
-@using FinchServer.Metadata
 @using Microsoft.EntityFrameworkCore
 
 @inject IDbContextFactory<DataContext> DbContextFactory
@@ -12,7 +12,7 @@
         </ul>
     </div>
     
-    <div class="flex gap-2">
+    <div class="flex gap-2 flex-wrap">
         @foreach (var artist in _artists) {
             <NavLink href="@($"/artists/{artist.Id}")">
                 <div class="card bg-base-100 w-48 shadow-sm">

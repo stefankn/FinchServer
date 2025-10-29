@@ -78,6 +78,8 @@ public class Album {
             return $"album_{DiscogsAlbumId}_thumbnail{extension}";
         }
     }
+
+    public DateTime AddedAt => DateTimeOffset.FromUnixTimeSeconds((long)Added).DateTime;
     
     
     // - Functions
