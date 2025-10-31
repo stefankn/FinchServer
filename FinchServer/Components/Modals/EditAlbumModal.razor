@@ -1,0 +1,101 @@
+@using FinchServer.Beets
+@using FinchServer.Components.Elements
+@using Microsoft.EntityFrameworkCore
+
+@inject IDbContextFactory<BeetsContext> DbContextFactory
+
+<Modal @bind-IsVisible="IsVisible" Title="@Title">
+    <Content>
+        <fieldset class="fieldset bg-base-200 border-base-300 rounded-box border p-4">
+            <label class="label">Artist</label>
+            <input type="text" class="input" placeholder="Artist" @bind="_artist" />
+        </fieldset>
+        <fieldset class="fieldset bg-base-200 border-base-300 rounded-box border p-4">
+            <label class="label">Title</label>
+            <input type="text" class="input" placeholder="Title" @bind="_title" />
+        </fieldset>
+        <fieldset class="fieldset bg-base-200 border-base-300 rounded-box border p-4">
+            <label class="label">Type</label>
+            <input type="text" class="input" placeholder="Type" @bind="_type" />
+        </fieldset>
+    </Content>
+    <Actions>
+        @if (_isLoading) {
+            <span class="loading loading-spinner loading-md"></span>
+        }
+        <button class="btn" @onclick="Close" disabled="@_isLoading">Cancel</button>
+        <button class="btn btn-primary" @onclick="Save" disabled="@_isLoading">Update</button>
+    </Actions>
+</Modal>
+
+@code {
+
+    // - Properties
+
+    [Parameter, EditorRequired]
+    public Album? Album { get; set; }
+    
+    [Parameter]
+    public EventCallback<Album?> AlbumChanged { get; set; }
+    
+    [Parameter]
+    public EventCallback<Album> OnAlbumUpdate { get; set; }
+
+    
+    // - Private Properties
+
+    private string Title => $"{Album?.AlbumArtist} - {Album?.Title}";
+    private bool _isLoading;
+
+    private string _artist = "";
+    private string _title = "";
+    private string _type = "";
+    
+    private bool IsVisible {
+        get => Album != null;
+        set {
+            if (value) return;
+            
+            Album = null;
+            AlbumChanged.InvokeAsync(null);
+        }
+    }
+    
+    
+    // - Functions
+    
+    protected override void OnParametersSet() {
+        if (Album == null) return;
+
+        _artist = Album.AlbumArtist;
+        _title = Album.Title;
+        _type = Album.AlbumType;
+    }
+    
+    
+    // - Private Functions
+
+    private async Task Save() {
+        if (Album == null) return;
+
+        _isLoading = true;
+
+        await using var context = await DbContextFactory.CreateDbContextAsync();
+        var album = await context.Albums.FindAsync(Album.Id);
+        if (album != null) {
+            album.AlbumArtist = _artist;
+            album.Title = _title;
+            album.AlbumType = _type;
+            
+            await context.SaveChangesAsync();
+            Close();
+
+            await OnAlbumUpdate.InvokeAsync(album);
+        }
+    }
+    
+    private void Close() {
+        IsVisible = false;
+        _isLoading = false;
+    }
+}
