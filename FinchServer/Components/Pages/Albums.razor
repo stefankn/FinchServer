@@ -18,6 +18,7 @@
         <table class="table table-zebra">
             <thead>
             <tr>
+                <th>Artwork</th>
                 <th>Artist</th>
                 <th>Title</th>
                 <th>Added at</th>
@@ -27,6 +28,11 @@
             <tbody>
             @foreach (var album in _albums) {
                 <tr>
+                    <td>
+                        <NavLink href="@($"/albums/{album.Id}")">
+                            <img class="size-12" src="@($"/api/v1/albums/{album.Id}/artwork/thumbnail")" alt="@($"{album.AlbumArtist} - {album.Title}")"/>
+                        </NavLink>
+                    </td>
                     <td><NavLink href="@($"/albums/{album.Id}")">@album.AlbumArtist</NavLink></td>
                     <td><NavLink href="@($"/albums/{album.Id}")">@album.Title</NavLink></td>
                     <td>@album.AddedAt.ToLongDateString()</td>

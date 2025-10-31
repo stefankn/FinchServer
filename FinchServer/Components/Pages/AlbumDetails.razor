@@ -21,11 +21,21 @@
         
         <div class="card lg:card-side bg-base-100 shadow-sm">
             <figure class="size-48 bg-base-200">
-
+                <img src="@($"/api/v1/albums/{_album.Id}/artwork/thumbnail")" alt="@($"{_album.AlbumArtist} - {_album.Title}")" />
             </figure>
             <div class="card-body">
                 <div class="flex justify-between items-start">
-                    <h2 class="card-title">@_album.AlbumArtist - @_album.Title</h2>
+                    <h2 class="card-title">@_album.Title</h2>
+                </div>
+                <div class="text-3xl font-bold">@_album.AlbumArtist</div>
+                
+                <div class="flex flex-col gap-1 text-sm text-base-content/50">
+                    <div>
+                        @_album.Year • @_album.Items?.FirstOrDefault()?.Format • @_album.CatalogNumber
+                    </div>
+                    <div>
+                        @_album.Genre • @_album.Style
+                    </div>
                 </div>
             </div>
         </div>
