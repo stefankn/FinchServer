@@ -18,6 +18,10 @@
             <label class="label">Type</label>
             <input type="text" class="input" placeholder="Type" @bind="_type" />
         </fieldset>
+        <fieldset class="fieldset bg-base-200 border-base-300 rounded-box border p-4">
+            <label class="label">Discogs album id</label>
+            <input type="text" class="input" placeholder="Type" @bind="_discogsAlbumId" />
+        </fieldset>
     </Content>
     <Actions>
         @if (_isLoading) {
@@ -50,6 +54,7 @@
     private string _artist = "";
     private string _title = "";
     private string _type = "";
+    private int _discogsAlbumId;
     
     private bool IsVisible {
         get => Album != null;
@@ -70,6 +75,7 @@
         _artist = Album.AlbumArtist;
         _title = Album.Title;
         _type = Album.AlbumType;
+        _discogsAlbumId = Album.DiscogsAlbumId ?? 0;
     }
     
     
@@ -86,6 +92,7 @@
             album.AlbumArtist = _artist;
             album.Title = _title;
             album.AlbumType = _type;
+            album.DiscogsAlbumId = _discogsAlbumId;
             
             await context.SaveChangesAsync();
             Close();
