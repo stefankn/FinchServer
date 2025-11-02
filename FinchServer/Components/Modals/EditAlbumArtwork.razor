@@ -1,0 +1,159 @@
+@using System.Text
+@using FinchServer.Beets
+@using FinchServer.Components.Elements
+@using FinchServer.Logging
+@using Microsoft.EntityFrameworkCore
+
+@inject IDbContextFactory<BeetsContext> DbContextFactory
+@inject IWebHostEnvironment Environment
+@inject BeetsConfiguration BeetsConfiguration
+@inject ILogger Logger
+
+<Modal @bind-IsVisible="IsVisible" Title="@Title">
+    <Content>
+        <div class="flex justify-between items-center gap-4">
+            <figure class="size-48 bg-base-200 relative">
+                <img src="@(Album?.ArtworkThumbnailFilename != null ? $"/api/v1/albums/{Album.Id}/artwork/thumbnail?v={DateTime.Now.Ticks}" : "/images/album-placeholder.png")" alt="@($"{Album?.AlbumArtist} - {Album?.Title}")"/>
+                <figcaption class="text-sm text-center mt-2 font-semibold">
+                    Current
+                </figcaption>
+            </figure>
+            
+            @if (_uploadedArtworkFilename != null) {
+                <figure class="size-48 bg-base-200 relative">
+                    <img src="@($"/uploads/{_uploadedArtworkFilename}")" alt="New artwork"/>
+                    <figcaption class="text-sm text-center mt-2 font-semibold">
+                        New
+                    </figcaption>
+                </figure>
+            } else {
+                <fieldset class="fieldset">
+                    <legend class="fieldset-legend">Upload artwork</legend>
+                    <InputFile class="file-input" OnChange="UploadArtwork" disabled="@_isLoading"></InputFile>
+                </fieldset>
+            }
+        </div>
+    </Content>
+    <Actions>
+        @if (_isLoading) {
+            <span class="loading loading-spinner loading-md"></span>
+        }
+        <button class="btn" @onclick="Close" disabled="@_isLoading">Cancel</button>
+        <button class="btn btn-primary" @onclick="Save" disabled="@_isLoading">Update</button>
+    </Actions>
+</Modal>
+
+@code {
+
+    // - Properties
+
+    [Parameter, EditorRequired]
+    public Album? Album { get; set; }
+    
+    [Parameter]
+    public EventCallback<Album?> AlbumChanged { get; set; }
+    
+    [Parameter]
+    public EventCallback<Album> OnAlbumUpdate { get; set; }
+
+    
+    // - Private Properties
+
+    private string Title => $"{Album?.AlbumArtist} - {Album?.Title}";
+    private bool _isLoading;
+    private string? _uploadedArtworkFilename;
+    
+    private bool IsVisible {
+        get => Album != null;
+        set {
+            if (value) return;
+            
+            Album = null;
+            AlbumChanged.InvokeAsync(null);
+        }
+    }
+    
+    
+    // - Functions
+    
+    protected override void OnParametersSet() {
+        if (Album == null) return;
+    }
+    
+    
+    // - Private Functions
+
+    private async Task UploadArtwork(InputFileChangeEventArgs e) {
+        _isLoading = true;
+
+        try {
+            var uploadPath = Path.Combine(Environment.WebRootPath, "uploads");
+            var file = e.File;
+            var extension = Path.GetExtension(file.Name);
+            var filename = $"{Guid.NewGuid().ToString()}{extension}";
+        
+            var path = Path.Combine(uploadPath, filename);
+            await using FileStream fs = new(path, FileMode.Create);
+            await file.OpenReadStream(1024 * 1024 * 5).CopyToAsync(fs);
+            
+            _uploadedArtworkFilename = filename;
+        } catch (Exception ex) {
+            Logger.Error("Failed to upload artwork", LogCategory.Web, consoleLog: true);
+            Logger.Error(ex.ToString(), LogCategory.Web);
+        }
+        
+        _isLoading = false;
+    }
+
+    private async Task Save() {
+        if (Album == null || _uploadedArtworkFilename == null) return;
+
+        _isLoading = true;
+
+        try {
+            await using var context = await DbContextFactory.CreateDbContextAsync();
+            var album = await context.Albums.FindAsync(Album.Id);
+            if (album == null) return;
+            
+            var albumPath = BeetsConfiguration.GetAlbumPath(Album.Id);
+            
+            if (Album.ArtworkPath != null) {
+                File.Delete(Album.ArtworkPath);
+
+                if (Album.ArtworkThumbnailFilename != null) {
+                    File.Delete(Path.Combine(Environment.ContentRootPath, "Resources/Thumbnails", Album.ArtworkThumbnailFilename));
+                }
+            }
+
+            var uploadPath = Path.Combine(Environment.WebRootPath, "uploads", _uploadedArtworkFilename);
+            var destinationPath = Path.Combine(albumPath, "cover.jpg");
+            File.Move(uploadPath, destinationPath);
+
+            album.ArtworkPathData = Encoding.UTF8.GetBytes(destinationPath);
+            await context.SaveChangesAsync();
+
+            _uploadedArtworkFilename = null;
+            Close();
+        
+            await OnAlbumUpdate.InvokeAsync(album);
+        } catch (Exception e) {
+            Logger.Error("Failed to replace artwork", LogCategory.Web, consoleLog: true);
+            Logger.Error(e.ToString(), LogCategory.Web);
+        }
+    }
+    
+    private void Close() {
+        if (_uploadedArtworkFilename != null) {
+            try {
+                File.Delete(Path.Combine(Environment.WebRootPath, "uploads", _uploadedArtworkFilename));
+            } catch (Exception e) {
+                Logger.Error("Failed to delete temp artwork file", LogCategory.Web, consoleLog: true);
+                Logger.Error(e.ToString(), LogCategory.Web);
+            }
+        }
+        
+        _uploadedArtworkFilename =  null;
+        IsVisible = false;
+        _isLoading = false;
+    }
+}

@@ -60,6 +60,11 @@ public class BeetsConfiguration {
         
         return process.ExitCode != 0 ? throw new Exception(error) : output;
     }
+
+    public string GetAlbumPath(int albumId) {
+        var output = RunCommand($"ls -a -f '$path' id:{albumId}");
+        return output.Trim().Trim('\'');
+    }
     
     
     // - Private Functions
