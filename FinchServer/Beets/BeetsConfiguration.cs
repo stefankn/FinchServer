@@ -33,13 +33,7 @@ public class BeetsConfiguration {
     // - Functions
 
     public StatsDto GetStats() {
-        var process = Run(ExecutablePath, "stats");
-        var output = process.StandardOutput.ReadToEnd();
-        var error = process.StandardError.ReadToEnd();
-        
-        if (process.ExitCode != 0) {
-            throw new Exception(error);
-        }
+        var output = RunCommand("stats");
         
         var stats = new Dictionary<string, string>();
         foreach (var line in output.Split('\n')) {
@@ -58,19 +52,20 @@ public class BeetsConfiguration {
             AlbumArtistCount = int.Parse(stats["Album artists"]),
         };
     }
+
+    public string RunCommand(string command) {
+        var process = Run(ExecutablePath, command);
+        var output = process.StandardOutput.ReadToEnd();
+        var error = process.StandardError.ReadToEnd();
+        
+        return process.ExitCode != 0 ? throw new Exception(error) : output;
+    }
     
     
     // - Private Functions
 
     private string GetConfigPath() {
-        var process = Run(ExecutablePath, "config -p");
-        var output = process.StandardOutput.ReadToEnd();
-        var error = process.StandardError.ReadToEnd();
-
-        if (process.ExitCode != 0) {
-            throw new Exception(error);
-        }
-
+        var output = RunCommand("config -p");
         return output.Trim();
     }
 
