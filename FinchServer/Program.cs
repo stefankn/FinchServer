@@ -4,9 +4,11 @@ using FinchServer.Metadata.FanartTV;
 using FinchServer.Beets;
 using FinchServer.Components;
 using FinchServer.Database;
+using FinchServer.Logging;
 using FinchServer.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
+using ILogger = FinchServer.Logging.ILogger;
 
 DotEnv.Load();
 
@@ -15,6 +17,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Configuration
 builder.Configuration.AddEnvironmentVariables();
 builder.Services.AddHttpClient();
+
+// Logging
+builder.Logging.ClearProviders();
+builder.Services.AddSingleton<ILogger>(provider => new Logger("FinchServer", provider.GetRequiredService<IWebHostEnvironment>().IsDevelopment()));
+
+// Beets configuration
 
 var beetsConfiguration = new BeetsConfiguration(builder.Configuration);
 builder.Services.AddSingleton(beetsConfiguration);
