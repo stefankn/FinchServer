@@ -21,7 +21,7 @@
         
         <div class="card lg:card-side bg-base-100 shadow-sm">
             <figure class="size-48 bg-base-200">
-                <img src="@($"/api/v1/albums/{_album.Id}/artwork/thumbnail")" alt="@($"{_album.AlbumArtist} - {_album.Title}")" />
+                <img src="@(_album.ArtworkThumbnailFilename != null ? $"/api/v1/albums/{_album.Id}/artwork/thumbnail" : "/images/album-placeholder.png")" alt="@($"{_album.AlbumArtist} - {_album.Title}")" />
             </figure>
             <div class="card-body">
                 <div class="flex justify-between items-start">

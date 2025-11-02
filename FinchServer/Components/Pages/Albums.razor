@@ -30,7 +30,7 @@
                 <tr>
                     <td>
                         <NavLink href="@($"/albums/{album.Id}")">
-                            <img class="size-12" src="@($"/api/v1/albums/{album.Id}/artwork/thumbnail")" alt="@($"{album.AlbumArtist} - {album.Title}")"/>
+                            <img class="size-12" src="@(album.ArtworkThumbnailFilename != null ? $"/api/v1/albums/{album.Id}/artwork/thumbnail" : "/images/album-placeholder.png")" alt="@($"{album.AlbumArtist} - {album.Title}")"/>
                         </NavLink>
                     </td>
                     <td><NavLink href="@($"/albums/{album.Id}")">@album.AlbumArtist</NavLink></td>
