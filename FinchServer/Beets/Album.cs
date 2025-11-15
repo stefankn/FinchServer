@@ -72,10 +72,10 @@ public class Album {
 
     public string? ArtworkThumbnailFilename {
         get {
-            if (DiscogsAlbumId == null || ArtworkPath == null) return null;
+            if (ArtworkPath == null) return null;
             var extension = Path.GetExtension(ArtworkPath);
             
-            return $"album_{DiscogsAlbumId}_thumbnail{extension}";
+            return $"album_{Id}_thumbnail{extension}";
         }
     }
 
