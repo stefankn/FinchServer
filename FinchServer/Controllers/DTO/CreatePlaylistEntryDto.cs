@@ -4,5 +4,5 @@ public class CreatePlaylistEntryDto {
     
     // - Properties
     
-    public int ItemId { get; set; }
+    public required int[] ItemIds { get; set; }
 }

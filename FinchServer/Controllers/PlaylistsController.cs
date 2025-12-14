@@ -52,25 +52,32 @@ public class PlaylistsController(
 
     [HttpPost]
     [Route("{id:int}/entries")]
-    public async Task<ActionResult<PlaylistEntryDto>> CreateEntry(int id, [FromBody] CreatePlaylistEntryDto body) {
+    public async Task<ActionResult<PlaylistEntryDto[]>> CreateEntry(int id, [FromBody] CreatePlaylistEntryDto body) {
         var playlist = await dataContext.Playlists.FindAsync(id);
         if (playlist == null) return NotFound();
 
-        var item = await beetsContext.Items.FindAsync(body.ItemId);
-        if (item == null) return NotFound();
-        
+        var items = await beetsContext.Items.Where(i => body.ItemIds.Contains(i.Id)).ToArrayAsync();
         await dataContext.Entry(playlist).Collection<PlaylistEntry>(p => p.Entries).LoadAsync();
+        
+        var itemsOrdered = body.ItemIds
+            .Select(itemId => items.FirstOrDefault(i => i.Id == itemId))
+            .OfType<Item>()
+            .ToArray();
 
         var currentIndex = playlist.Entries.Count > 0 ? playlist.Entries.Max(e => e.Index) : 0;
-        var entry = new PlaylistEntry {
-            Index = currentIndex + 1,
+        var entries = itemsOrdered.Select((item, i) => new PlaylistEntry {
+            Index = currentIndex + i + 1,
             ItemId = item.Id,
             CreatedAt = DateTime.Now
-        };
-        playlist.Entries.Add(entry);
+        }).ToArray();
+        
+        foreach (var entry in entries) {
+            playlist.Entries.Add(entry);
+        }
+        
         await dataContext.SaveChangesAsync();
-
-        return CreatedAtAction(nameof(Get), new { id = entry.Id }, new PlaylistEntryDto(entry, item));
+        
+        return Ok(entries.Select(e => new PlaylistEntryDto(e, items.First(i => i.Id == e.ItemId))));
     }
 
     [HttpDelete]

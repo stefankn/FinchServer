@@ -3,22 +3,12 @@ using FinchServer.Database;
 
 namespace FinchServer.Controllers.DTO;
 
-public class PlaylistEntryDto {
+public class PlaylistEntryDto(PlaylistEntry entry, Item item) {
     
     // - Properties
     
-    public int Id { get; set; }
-    public int Index { get; set; }
-    public ItemDto Item { get; set; }
-    public DateTimeOffset CreatedAt { get; set; }
-    
-    
-    // - Construction
-
-    public PlaylistEntryDto(PlaylistEntry entry, Item item) {
-        Id = entry.Id;
-        Index = entry.Index;
-        Item = new ItemDto(item);
-        CreatedAt = entry.CreatedAt.AddTicks( - (entry.CreatedAt.Ticks % TimeSpan.TicksPerSecond));;
-    }
+    public int Id { get; set; } = entry.Id;
+    public int Index { get; set; } = entry.Index;
+    public ItemDto Item { get; set; } = new(item);
+    public DateTimeOffset CreatedAt { get; set; } = entry.CreatedAt.AddTicks( - (entry.CreatedAt.Ticks % TimeSpan.TicksPerSecond));
 }
