@@ -3,6 +3,7 @@ using System;
 using FinchServer.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FinchServer.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20251222082538_AddImportJobTables")]
+    partial class AddImportJobTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.5");
@@ -104,6 +107,7 @@ namespace FinchServer.Migrations
                         .HasColumnName("import_job_id");
 
                     b.Property<string>("Path")
+                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("TEXT")
                         .HasColumnName("path");
@@ -127,16 +131,6 @@ namespace FinchServer.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT")
                         .HasColumnName("created_at");
-
-                    b.Property<bool>("IsCompleted")
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("is_completed");
-
-                    b.Property<string>("Path")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("TEXT")
-                        .HasColumnName("path");
 
                     b.HasKey("Id")
                         .HasName("pk_import_jobs");

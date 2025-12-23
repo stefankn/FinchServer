@@ -1,0 +1,54 @@
+@page "/import/new"
+@using FinchServer.Logging
+@using FinchServer.MusicImport
+
+@inject IMusicImporter MusicImporter
+@inject NavigationManager NavigationManager
+@inject ILogger Logger
+
+<div class="flex flex-col gap-6">
+    <div class="breadcrumbs text-sm">
+        <ul>
+            <li class="font-semibold"><NavLink href="/import">Import music</NavLink></li>
+            <li>New job</li>
+        </ul>
+    </div>
+    
+    <div class="card card-border bg-base-200 w-128">
+        <div class="card-body">
+            <h2 class="card-title">Upload files</h2>
+            <fieldset class="fieldset">
+                <div class="flex justify-between">
+                    <InputFile class="file-input w-full" OnChange="UploadFiles" disabled="@_isUploadingFiles" multiple></InputFile>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+    
+    @if (_isUploadingFiles) {
+        <span class="loading loading-spinner loading-xl"></span>
+    }
+</div>
+
+@code {
+
+    // - Private Properties
+    
+    private bool _isUploadingFiles;
+    
+    
+    // - Private Functions
+
+    private async Task UploadFiles(InputFileChangeEventArgs e) {
+        _isUploadingFiles = true;
+        try {
+            var files = e.GetMultipleFiles(100).ToArray();
+            var job = await MusicImporter.Upload(files);
+            NavigationManager.NavigateTo($"/import/{job.Id}");
+        } catch (Exception ex) {
+            Logger.Error($"Error importing files, {ex}", LogCategory.Importer, consoleLog: true);
+        }
+
+        _isUploadingFiles = false;
+    }
+}

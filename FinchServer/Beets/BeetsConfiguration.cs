@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text;
 using FinchServer.Controllers.DTO;
 
 namespace FinchServer.Beets;
@@ -51,6 +52,10 @@ public class BeetsConfiguration {
             AlbumCount = int.Parse(stats["Albums"]),
             AlbumArtistCount = int.Parse(stats["Album artists"]),
         };
+    }
+
+    public InteractiveCommand RunInteractiveCommand(string command) {
+        return new InteractiveCommand(ExecutablePath, command);
     }
 
     public string RunCommand(string command) {

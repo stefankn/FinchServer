@@ -1,0 +1,37 @@
+@typeparam T
+
+<label class="tab">
+    <input type="radio" name="@Parent.ControlId" checked="@IsActive" @onchange="Changed" />
+    <div class="flex gap-1 items-center">
+        @Icon
+        @TabTitle
+    </div>
+</label>
+<div class="tab-content bg-base-100 border-base-300 p-4">
+    @ChildContent
+</div>
+
+@code {
+    
+    [CascadingParameter]
+    public required TabControl<T> Parent { get; set; }
+
+    [Parameter, EditorRequired]
+    public required T Item { get; set; }
+    
+    [Parameter]
+    public string? Title { get; set; }
+    
+    [Parameter]
+    public RenderFragment? Icon { get; set; }
+    
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private string? TabTitle => Title ?? Item?.ToString();
+    private bool IsActive => Parent.ActiveItem?.Equals(Item) == true;
+
+    private void Changed(ChangeEventArgs e) {
+        Parent.ActiveItemChanged.InvokeAsync(Item);
+    }
+}

@@ -1,0 +1,90 @@
+@using FinchServer.Components.Elements
+@using FinchServer.Components.Pages.Import
+
+<Modal @bind-IsVisible="IsVisible" Title="Import configuration">
+    <Content>
+        <fieldset class="fieldset bg-base-200 border-base-300 rounded-box border p-4 w-full">
+            <label class="label">Preset</label>
+            
+            <InputSelect @bind-Value="_selectedImportType" class="select w-full" @bind-Value:after="UpdateConfiguration">
+                @foreach (var importType in Enum.GetValues<ImportConfiguration.ImportType>()) {
+                    <option value="@importType">@importType</option>
+                }
+            </InputSelect>
+        </fieldset>
+        <fieldset class="fieldset bg-base-200 border-base-300 rounded-box border p-4 w-full">
+            <label class="label">Search id</label>
+            
+            <InputText @bind-Value="ImportConfiguration.SearchId" class="input"></InputText>
+        </fieldset>
+        <fieldset class="fieldset bg-base-200 border-base-300 rounded-box border p-4 w-full">
+            <label class="label">Set album type</label>
+            
+            <InputText @bind-Value="ImportConfiguration.AlbumType" class="input"></InputText>
+        </fieldset>
+        <fieldset class="fieldset bg-base-200 border-base-300 rounded-box border p-4 w-full">
+            <label class="label">Keep existing metadata</label>
+            
+            <InputCheckbox @bind-Value="ImportConfiguration.KeepExistingMetadata" class="toggle"></InputCheckbox>
+        </fieldset>
+        <fieldset class="fieldset bg-base-200 border-base-300 rounded-box border p-4 w-full">
+            <label class="label">Import as singleton</label>
+            
+            <InputCheckbox @bind-Value="ImportConfiguration.ImportAsSingleton" class="toggle"></InputCheckbox>
+        </fieldset>
+    </Content>
+    <Actions>
+        <button class="btn" @onclick="() => IsVisibleChanged.InvokeAsync()">Cancel</button>
+        <button class="btn btn-primary" @onclick="Confirm">Start import</button>
+    </Actions>
+</Modal>
+
+@code {
+    
+    [Parameter, EditorRequired]
+    public ImportConfiguration ImportConfiguration { get; set; }
+
+    [Parameter, EditorRequired]
+    public bool IsVisible { get; set; }
+    
+    [Parameter]
+    public EventCallback<bool> IsVisibleChanged { get; set; }
+    
+    [Parameter]
+    public EventCallback<bool> IsImportConfirmed { get; set; }
+    
+    private ImportConfiguration.ImportType _selectedImportType;
+
+    protected override void OnParametersSet() {
+        if (!IsVisible) return;
+        
+        _selectedImportType = ImportConfiguration.Type;
+        UpdateConfiguration();
+    }
+
+    private async Task Confirm() {
+        ImportConfiguration.Type = _selectedImportType;
+        await IsVisibleChanged.InvokeAsync();
+        await IsImportConfirmed.InvokeAsync(true);
+    }
+
+    private void UpdateConfiguration() {
+        switch (_selectedImportType) {
+            case ImportConfiguration.ImportType.Album:
+                ImportConfiguration.KeepExistingMetadata = false;
+                ImportConfiguration.ImportAsSingleton = false;
+                ImportConfiguration.AlbumType = null;
+                break;
+            case ImportConfiguration.ImportType.DjMix:
+                ImportConfiguration.KeepExistingMetadata = true;
+                ImportConfiguration.ImportAsSingleton = true;
+                ImportConfiguration.AlbumType = "dj-mix";
+                break;
+            case ImportConfiguration.ImportType.SingleTrack:
+                ImportConfiguration.KeepExistingMetadata = true;
+                ImportConfiguration.ImportAsSingleton = true;
+                ImportConfiguration.AlbumType = null;
+                break;
+        }
+    }
+}

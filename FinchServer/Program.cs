@@ -5,6 +5,7 @@ using FinchServer.Beets;
 using FinchServer.Components;
 using FinchServer.Database;
 using FinchServer.Logging;
+using FinchServer.MusicImport;
 using FinchServer.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
@@ -50,6 +51,9 @@ builder.Services.AddDbContextFactory<DataContext>();
 // Metadata
 builder.Services.AddTransient<IMetadataFetcher, FanartTvMetadataFetcher>();
 builder.Services.AddSingleton<IMetadataManager, MetadataManager>();
+
+// Music import
+builder.Services.AddSingleton<IMusicImporter, MusicImporter>();
 
 // https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();

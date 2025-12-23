@@ -1,0 +1,26 @@
+@attribute [CascadingTypeParameter(nameof(T))]
+@typeparam T
+
+<div class="tabs @Classes">
+    <CascadingValue Value="this">
+        @ChildContent
+    </CascadingValue>
+</div>
+
+@code {
+    
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+    
+    [Parameter]
+    public required T ActiveItem { get; set; }
+
+    [Parameter]
+    public EventCallback<T> ActiveItemChanged { get; set; }
+
+    [Parameter]
+    public string? Classes { get; set; } = "tabs-lift";
+    
+    // Identifier for the tab control needs to be unique
+    public readonly string ControlId = Guid.NewGuid().ToString();
+}

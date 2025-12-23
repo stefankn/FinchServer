@@ -9,6 +9,7 @@ public class DataContext(DbContextOptions<DataContext> options): DbContext(optio
     public DbSet<Playlist> Playlists { get; set; }
     public DbSet<PlaylistEntry> PlaylistEntries { get; set; }
     public DbSet<Artist> Artists { get; set; }
+    public DbSet<ImportJob> ImportJobs { get; set; }
     
     
     // - Functions

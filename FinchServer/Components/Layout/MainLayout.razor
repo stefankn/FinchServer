@@ -1,5 +1,3 @@
-@using FinchServer.Database
-
 @inherits LayoutComponentBase
 
 <div class="container mx-auto flex flex-col gap-4">
@@ -26,7 +24,7 @@
             <NavLink href="/">
                 <div class="flex items-center gap-2">
                     <img src="images/logo.png" alt="Finch server" class="size-12" />
-                    <div class="flex text-xl gap-1"><div class="font-semibold">Finch</div><div class="font-thin">management</div></div>
+                    <div class="flex text-xl gap-1"><div class="font-semibold">Finch</div><div class="font-thin">server</div></div>
                 </div>
             </NavLink>
         </div>
@@ -36,6 +34,7 @@
                 <li><NavLink href="/albums">Albums</NavLink></li>
                 <li><NavLink href="/artists">Artists</NavLink></li>
                 <li><NavLink href="/playlists">Playlists</NavLink></li>
+                <li><NavLink href="/import">Import music</NavLink></li>
             </ul>
         </div>
     </div>
