@@ -79,11 +79,13 @@
                 ImportConfiguration.KeepExistingMetadata = true;
                 ImportConfiguration.ImportAsSingleton = true;
                 ImportConfiguration.AlbumType = "dj-mix";
+                ImportConfiguration.SearchId = null;
                 break;
             case ImportConfiguration.ImportType.SingleTrack:
                 ImportConfiguration.KeepExistingMetadata = true;
                 ImportConfiguration.ImportAsSingleton = true;
-                ImportConfiguration.AlbumType = null;
+                ImportConfiguration.SearchId = null;
+                ImportConfiguration.AlbumType = "";
                 break;
         }
     }
