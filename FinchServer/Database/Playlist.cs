@@ -15,6 +15,9 @@ public class Playlist {
     [Column(TypeName = "text")]
     public string? Description { get; set; }
     
+    [MaxLength(255)] 
+    public string? ImageFileName { get; set; }
+    
     public required ICollection<PlaylistEntry> Entries { get; set; }
     
     public DateTime CreatedAt { get; init; }
