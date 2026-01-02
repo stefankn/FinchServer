@@ -10,6 +10,10 @@
             <label class="label">Discogs artist id</label>
             <input type="number" class="input" placeholder="Discogs artist Id" @bind="_discogsArtistId" />
         </fieldset>
+        <fieldset class="fieldset bg-base-200 border-base-300 rounded-box border p-4">
+            <label class="label">Album type</label>
+            <input type="text" class="input" placeholder="Album type" @bind="_albumType" />
+        </fieldset>
     </Content>
     <Actions>
         @if (_isLoading) {
@@ -34,13 +38,13 @@
     public EventCallback<Item> OnItemUpdate { get; set; }
     
     
-    
     // - Private Properties
 
     private string Title => $"{Item?.Artist} - {Item?.Title}";
     private bool _isLoading;
 
     private int? _discogsArtistId;
+    private string? _albumType;
     
     private bool IsVisible {
         get => Item != null;
@@ -58,6 +62,7 @@
         if (Item == null) return;
 
         _discogsArtistId = Item.DiscogsArtistId;
+        _albumType = Item.AlbumType;
     }
 
 
@@ -72,6 +77,8 @@
         var item = await context.Items.FindAsync(Item.Id);
         if (item != null) {
             item.DiscogsArtistId = _discogsArtistId;
+            item.AlbumType = _albumType ?? "";
+            item.AlbumTypes = _albumType ?? "";
             await context.SaveChangesAsync();
             Close();
 

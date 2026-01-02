@@ -45,6 +45,9 @@ public class Item {
     [Column("albumtype")]
     public required string AlbumType { get; set; }
     
+    [Column("albumtypes")]
+    public required string AlbumTypes { get; set; }
+    
     [Column("genre")]
     public string? Genre { get; set; }
     
