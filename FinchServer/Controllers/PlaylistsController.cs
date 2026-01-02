@@ -19,7 +19,7 @@ public class PlaylistsController(
     
     // - Private Properties
     
-    private readonly string _playlistImagePath = Path.Combine(webHostEnvironment.ContentRootPath, "Resources", "Playlists");
+    private readonly string _playlistArtworkPath = Path.Combine(webHostEnvironment.ContentRootPath, "Resources", "Playlists");
     
     
     // - Functions
@@ -39,12 +39,12 @@ public class PlaylistsController(
     }
 
     [HttpGet]
-    [Route("{id:int}/image")]
+    [Route("{id:int}/artwork")]
     public async Task<ActionResult> Image(int id) {
         var playlist = await dataContext.Playlists.FindAsync(id);
         if (playlist?.ImageFileName == null) return NotFound();
         
-        var path = Path.Combine(_playlistImagePath, playlist.ImageFileName);
+        var path = Path.Combine(_playlistArtworkPath, playlist.ImageFileName);
         var stream = new FileStream(path, FileMode.Open);
         return File(stream, "image/jpeg");
     }
@@ -143,8 +143,21 @@ public class PlaylistsController(
         return CreatedAtAction(nameof(Get), new { id = playlist.Id }, new PlaylistDto(playlist));
     }
 
+    [HttpDelete]
+    [Route("{id:int}/artwork")]
+    public async Task<ActionResult<PlaylistDto>> DeleteArtwork(int id) {
+        var playlist = await dataContext.Playlists.FindAsync(id);
+        if (playlist == null) return NotFound();
+        
+        DeleteImageFile(playlist.ImageFileName);
+        playlist.ImageFileName = null;
+        await dataContext.SaveChangesAsync();
+
+        return Ok(new PlaylistDto(playlist));
+    }
+
     [HttpPut]
-    [Route("{id:int}/image")]
+    [Route("{id:int}/artwork")]
     [RequestSizeLimit(1024 * 1024 * 1)]
     public async Task<ActionResult<PlaylistDto>> Image(int id, IFormFile image) {
         if (image.Length == 0) return BadRequest(new { message = "No image provided" });
@@ -162,19 +175,10 @@ public class PlaylistsController(
         if (playlist == null) return NotFound();
         
         // Delete existing image
-        if (playlist.ImageFileName != null) {
-            try {
-                var existingImagePath = Path.Combine(_playlistImagePath, playlist.ImageFileName);
-                if (System.IO.File.Exists(existingImagePath))
-                    System.IO.File.Delete(existingImagePath);
-            } catch (Exception e) {
-                logger.Error($"Unable to delete image file {playlist.ImageFileName}, {e.Message}", LogCategory.Web, consoleLog: true);
-                logger.Error(e.ToString(), LogCategory.Web);
-            }
-        }
+        DeleteImageFile(playlist.ImageFileName);
         
         var filename = $"playlist_{id}-{Guid.NewGuid()}{extension}";
-        var path = Path.Combine(_playlistImagePath, filename);
+        var path = Path.Combine(_playlistArtworkPath, filename);
         
         await using var stream = new FileStream(path, FileMode.Create);
         await image.CopyToAsync(stream);
@@ -195,5 +199,21 @@ public class PlaylistsController(
         await dataContext.SaveChangesAsync();
         
         return NoContent();
+    }
+    
+    
+    // - Private Functions
+
+    private void DeleteImageFile(string? filename) {
+        if (filename == null) return;
+        
+        try {
+            var existingImagePath = Path.Combine(_playlistArtworkPath, filename);
+            if (System.IO.File.Exists(existingImagePath))
+                System.IO.File.Delete(existingImagePath);
+        } catch (Exception e) {
+            logger.Error($"Unable to delete image file {filename}, {e.Message}", LogCategory.Web, consoleLog: true);
+            logger.Error(e.ToString(), LogCategory.Web);
+        }
     }
 }
