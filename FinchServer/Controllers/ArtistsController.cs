@@ -1,4 +1,3 @@
-using FinchServer.Beets;
 using FinchServer.Metadata;
 using FinchServer.Controllers.DTO;
 using FinchServer.Database;

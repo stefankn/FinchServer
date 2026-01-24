@@ -7,7 +7,7 @@ public enum LogCategory {
     [Description("IMPORT"), ConsoleColor(Colors.Cyan)]
     Importer,
     
-    [Description("WEB"), ConsoleColor(Colors.Magenta)]
+    [Description("WEB"), ConsoleColor(Colors.BrightMagenta)]
     Web,
 }
 
@@ -17,9 +17,12 @@ internal static class Colors {
     public const string Green = "\u001b[42m";
     public const string Red = "\u001b[41m";
     public const string BrightRed = "\u001b[101m";
+    public const string BrightGreen = "\u001b[102m";
+    public const string BrightYellow = "\u001b[103m";
+    public const string BrightBlue = "\u001b[104m";
     public const string Cyan = "\u001b[46m";
     public const string BrightCyan = "\u001b[106m";
-    public const string Magenta = "\u001b[105m";
+    public const string BrightMagenta = "\u001b[105m";
 }
 
 [AttributeUsage(AttributeTargets.Field)]

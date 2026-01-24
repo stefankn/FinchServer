@@ -24,7 +24,6 @@ builder.Logging.ClearProviders();
 builder.Services.AddSingleton<ILogger>(provider => new Logger("FinchServer", provider.GetRequiredService<IWebHostEnvironment>().IsDevelopment()));
 
 // Beets configuration
-
 var beetsConfiguration = new BeetsConfiguration(builder.Configuration);
 builder.Services.AddSingleton(beetsConfiguration);
 
