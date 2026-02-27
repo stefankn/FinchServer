@@ -1,3 +1,5 @@
+using FFMpegCore;
+using FFMpegCore.Pipes;
 using FinchServer.Beets;
 using FinchServer.Controllers.DTO;
 using FinchServer.Controllers.Utilities;
@@ -87,5 +89,23 @@ public class ItemsController(BeetsContext beetsContext): ControllerBase {
         return new FileStreamResult(stream, "audio/basic") {
             EnableRangeProcessing = true
         };
+    }
+
+    [HttpGet("{id:int}/stream/ogg")]
+    public async Task<ActionResult> StreamOgg(int id) {
+        var path = (await beetsContext.Items.FindAsync(id))?.Path;
+        if (path == null || !System.IO.File.Exists(path)) return NotFound();
+
+        var outputStream = new MemoryStream();
+        await FFMpegArguments
+            .FromFileInput(path)
+            .OutputToPipe(new StreamPipeSink(outputStream), options => options
+                .WithAudioCodec("libvorbis")
+                .WithAudioBitrate(128)
+                .ForceFormat("ogg"))
+            .ProcessAsynchronously();
+        
+        outputStream.Seek(0, SeekOrigin.Begin);
+        return new FileStreamResult(outputStream, "audio/ogg");
     }
 }
