@@ -4,6 +4,7 @@ using FinchServer.Beets;
 using FinchServer.Controllers.DTO;
 using FinchServer.Controllers.Utilities;
 using LinqKit;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -96,16 +97,25 @@ public class ItemsController(BeetsContext beetsContext): ControllerBase {
         var path = (await beetsContext.Items.FindAsync(id))?.Path;
         if (path == null || !System.IO.File.Exists(path)) return NotFound();
 
-        var outputStream = new MemoryStream();
-        await FFMpegArguments
+        Console.WriteLine($"ogg streaming endpoint called for {path}");
+
+        Response.ContentType = "audio/ogg";
+        HttpContext.Features.Get<IHttpResponseBodyFeature>()?.DisableBuffering();
+
+        var pipe = new System.IO.Pipelines.Pipe();
+
+        var ffmpegTask = FFMpegArguments
             .FromFileInput(path)
-            .OutputToPipe(new StreamPipeSink(outputStream), options => options
+            .OutputToPipe(new StreamPipeSink(pipe.Writer.AsStream()), options => options
                 .WithAudioCodec("libvorbis")
                 .WithAudioBitrate(128)
                 .ForceFormat("ogg"))
-            .ProcessAsynchronously();
-        
-        outputStream.Seek(0, SeekOrigin.Begin);
-        return new FileStreamResult(outputStream, "audio/ogg");
+            .ProcessAsynchronously()
+            .ContinueWith(_ => pipe.Writer.Complete());
+
+        await pipe.Reader.CopyToAsync(Response.Body);
+        await ffmpegTask;
+
+        return new EmptyResult();
     }
 }
