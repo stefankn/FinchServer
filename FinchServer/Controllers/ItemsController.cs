@@ -91,15 +91,13 @@ public class ItemsController(BeetsContext beetsContext): ControllerBase {
             EnableRangeProcessing = true
         };
     }
-
-    [HttpGet("{id:int}/stream/ogg")]
-    public async Task<ActionResult> StreamOgg(int id) {
+    
+    [HttpGet("{id:int}/stream/wav")]
+    public async Task<ActionResult> StreamWav(int id) {
         var path = (await beetsContext.Items.FindAsync(id))?.Path;
         if (path == null || !System.IO.File.Exists(path)) return NotFound();
 
-        Console.WriteLine($"ogg streaming endpoint called for {path}");
-
-        Response.ContentType = "audio/ogg";
+        Response.ContentType = "audio/wav";
         HttpContext.Features.Get<IHttpResponseBodyFeature>()?.DisableBuffering();
 
         var pipe = new System.IO.Pipelines.Pipe();
@@ -107,9 +105,9 @@ public class ItemsController(BeetsContext beetsContext): ControllerBase {
         var ffmpegTask = FFMpegArguments
             .FromFileInput(path)
             .OutputToPipe(new StreamPipeSink(pipe.Writer.AsStream()), options => options
-                .WithAudioCodec("libvorbis")
-                .WithAudioBitrate(128)
-                .ForceFormat("ogg"))
+                .WithAudioCodec("pcm_s16le")
+                .WithAudioSamplingRate(44100)
+                .ForceFormat("wav"))
             .ProcessAsynchronously()
             .ContinueWith(_ => pipe.Writer.Complete());
 
