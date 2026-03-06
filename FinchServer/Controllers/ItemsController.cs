@@ -85,9 +85,10 @@ public class ItemsController(BeetsContext beetsContext): ControllerBase {
     public async Task<ActionResult> Stream(int id) {
         var path = (await beetsContext.Items.FindAsync(id))?.Path;
         if (path == null || !System.IO.File.Exists(path)) return NotFound();
-        
+
+        var contentType = Path.GetExtension(path) == ".flac" ? "audio/flac" : "audio/basic";
         var stream = new FileStream(path, FileMode.Open, FileAccess.Read);
-        return new FileStreamResult(stream, "audio/basic") {
+        return new FileStreamResult(stream, contentType) {
             EnableRangeProcessing = true
         };
     }
