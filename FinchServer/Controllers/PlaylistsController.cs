@@ -63,7 +63,7 @@ public class PlaylistsController(
         foreach (var entry in playlist.Entries) {
             var item = items.FirstOrDefault(i => i.Id == entry.ItemId);
             if (item != null) {
-                entries.Add(new PlaylistEntryDto(entry, item));
+                entries.Add(new PlaylistEntryDto(entry, item, playlist));
             }
         }
 
@@ -97,7 +97,7 @@ public class PlaylistsController(
         
         await dataContext.SaveChangesAsync();
         
-        return Ok(entries.Select(e => new PlaylistEntryDto(e, items.First(i => i.Id == e.ItemId))));
+        return Ok(entries.Select(e => new PlaylistEntryDto(e, items.First(i => i.Id == e.ItemId), playlist)));
     }
 
     [HttpDelete]
