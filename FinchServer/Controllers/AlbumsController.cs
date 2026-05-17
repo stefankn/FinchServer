@@ -100,7 +100,7 @@ public class AlbumsController(
         var album = await beetsContext.Albums.Include(a => a.Items).FirstOrDefaultAsync(a => a.Id == id);
         if (album == null) return NotFound();
 
-        return album.Items?.Select(i => new ItemDto(i)).ToArray() ?? [];
+        return album.Items?.Select(i => new ItemDto(i, album)).ToArray() ?? [];
     }
 
     [HttpGet("{id:int}/artwork")]

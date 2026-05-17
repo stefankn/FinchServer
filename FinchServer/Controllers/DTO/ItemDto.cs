@@ -2,8 +2,8 @@ using FinchServer.Beets;
 
 namespace FinchServer.Controllers.DTO;
 
-public class ItemDto(Item item) {
-    
+public class ItemDto(Item item, Album? album = null) {
+
     // - Properties
     
     public int Id { get; set; } = item.Id;
@@ -11,6 +11,7 @@ public class ItemDto(Item item) {
     public int? Disc { get; set; } = item.Disc;
     public string Title { get; set; } = item.Title;
     public string Artist { get; set; } = item.Artist;
+    public string? Album { get; set; } = album?.Title;
     public double Length { get; set; } = item.Length;
     public string Format { get; set; } = item.Format;
     public int Bitrate { get; set; } = item.Bitrate;
