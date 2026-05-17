@@ -75,7 +75,7 @@ public class ItemsController(BeetsContext beetsContext): ControllerBase {
         
         var skip = (page - 1) * limit;
         var countTask = query.CountAsync();
-        var dataTask = query.Skip(skip).Take(limit).Select(a => new ItemDto(a)).ToArrayAsync();
+        var dataTask = query.Skip(skip).Take(limit).Select(a => new ItemDto(a, null)).ToArrayAsync();
         await Task.WhenAll(countTask, dataTask);
         
         return new Pager<ItemDto>(await dataTask, page, await countTask, limit);
