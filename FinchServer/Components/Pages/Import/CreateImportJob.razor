@@ -42,7 +42,7 @@
     private async Task UploadFiles(InputFileChangeEventArgs e) {
         _isUploadingFiles = true;
         try {
-            var files = e.GetMultipleFiles(100).ToArray();
+            var files = e.GetMultipleFiles(200).ToArray();
             var job = await MusicImporter.Upload(files);
             NavigationManager.NavigateTo($"/import/{job.Id}");
         } catch (Exception ex) {
